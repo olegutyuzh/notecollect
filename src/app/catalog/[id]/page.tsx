@@ -6,13 +6,14 @@ import { ArrowLeft } from 'lucide-react'
 import type { BanknoteWithRelations } from '@/types/database'
 import { AddToCollectionButton } from '@/components/ui/AddToCollectionButton'
 
-export default async function BanknotePage({ params }: { params: { id: string } }) {
+export default async function BanknotePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createServerSupabaseClient()
 
   const { data: banknote } = await supabase
     .from('banknotes')
     .select('*, countries(*), currencies(*)')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!banknote) notFound()

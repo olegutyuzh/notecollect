@@ -63,6 +63,12 @@ export interface Database {
           purchase_price: number | null
           purchase_date: string | null
           notes: string | null
+          public_notes: string | null
+          serial_number: string | null
+          grading_company: string | null
+          grading_score: string | null
+          designation: string | null
+          cert_number: string | null
           image_url: string | null
           for_trade: boolean
           for_sale: boolean
