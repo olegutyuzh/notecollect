@@ -52,7 +52,32 @@
       "loading": "Wird angemeldet...",
       "error": "Ungültige E-Mail oder Passwort",
       "noAccount": "Kein Konto?",
-      "registerLink": "Registrieren"
+      "registerLink": "Registrieren",
+      "forgotPassword": "Passwort vergessen?"
+    },
+    "forgot": {
+      "title": "Passwort zurücksetzen",
+      "subtitle": "E-Mail eingeben — wir senden Ihnen einen Reset-Link",
+      "submit": "Link senden",
+      "loading": "Wird gesendet...",
+      "success": "E-Mail gesendet",
+      "successDesc": "Prüfen Sie Ihren Posteingang {email} und klicken Sie auf den Link.",
+      "backToLogin": "Zurück zur Anmeldung",
+      "error": "E-Mail konnte nicht gesendet werden. Bitte Adresse prüfen."
+    },
+    "reset": {
+      "title": "Neues Passwort",
+      "subtitle": "Geben Sie ein neues Passwort für Ihr Konto ein",
+      "password": "Neues Passwort",
+      "confirm": "Passwort bestätigen",
+      "submit": "Passwort speichern",
+      "loading": "Wird gespeichert...",
+      "success": "Passwort geändert",
+      "successDesc": "Sie können sich jetzt mit Ihrem neuen Passwort anmelden.",
+      "toLogin": "Anmelden",
+      "errorMismatch": "Passwörter stimmen nicht überein",
+      "errorShort": "Mindestens 6 Zeichen",
+      "error": "Passwort konnte nicht geändert werden. Bitte erneut versuchen."
     },
     "register": {
       "title": "Registrieren",
@@ -193,7 +218,7 @@
       "series": "Serie",
       "type": "Typ",
       "issueDate": "Ausgabedatum",
-      "demonetized": "Außer Kurs",
+      "demonetized": "Demonetisiert",
       "material": "Material",
       "size": "Größe",
       "shape": "Form",
@@ -203,14 +228,14 @@
       "securityFeatures": "Sicherheitsmerkmale",
       "desc": "Beschreibung",
       "designers": "Designer",
-      "engravers": "Graveur",
+      "engravers": "Graveure",
       "text": "Text"
     }
   },
   "Stats": {
-    "title": "Sammlungsstatistiken",
+    "title": "Sammlungsstatistik",
     "items": "Exemplare",
-    "unique": "Einzigartig",
+    "unique": "Einzigartige",
     "countries": "Länder",
     "forSwap": "Zum Tausch",
     "mapTitle": "Geografie der Sammlung",
@@ -219,7 +244,7 @@
     "gradesTitle": "Zustandsverteilung",
     "topCountriesTitle": "Top-Länder",
     "moreCountries": "+{n} weitere Länder",
-    "mapError": "Karte konnte nicht geladen werden. Überprüfen Sie Ihre Internetverbindung.",
-    "authRequired": "Melden Sie sich an, um Statistiken zu sehen"
+    "mapError": "Karte konnte nicht geladen werden. Internetverbindung prüfen.",
+    "authRequired": "Anmelden, um Statistiken anzuzeigen"
   }
 }

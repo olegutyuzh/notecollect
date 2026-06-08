@@ -52,7 +52,32 @@
       "loading": "Logowanie...",
       "error": "Nieprawidłowy email lub hasło",
       "noAccount": "Nie masz konta?",
-      "registerLink": "Zarejestruj się"
+      "registerLink": "Zarejestruj się",
+      "forgotPassword": "Zapomniałeś hasła?"
+    },
+    "forgot": {
+      "title": "Resetowanie hasła",
+      "subtitle": "Podaj email — wyślemy link do resetowania",
+      "submit": "Wyślij link",
+      "loading": "Wysyłanie...",
+      "success": "Email wysłany",
+      "successDesc": "Sprawdź skrzynkę {email} i kliknij link w wiadomości.",
+      "backToLogin": "Powrót do logowania",
+      "error": "Nie można wysłać emaila. Sprawdź adres."
+    },
+    "reset": {
+      "title": "Nowe hasło",
+      "subtitle": "Wprowadź nowe hasło do swojego konta",
+      "password": "Nowe hasło",
+      "confirm": "Potwierdź hasło",
+      "submit": "Zapisz hasło",
+      "loading": "Zapisywanie...",
+      "success": "Hasło zmienione",
+      "successDesc": "Możesz teraz zalogować się nowym hasłem.",
+      "toLogin": "Zaloguj się",
+      "errorMismatch": "Hasła nie są zgodne",
+      "errorShort": "Minimum 6 znaków",
+      "error": "Nie można zmienić hasła. Spróbuj ponownie."
     },
     "register": {
       "title": "Rejestracja",
@@ -193,7 +218,7 @@
       "series": "Seria",
       "type": "Typ",
       "issueDate": "Data emisji",
-      "demonetized": "Wycofana z obiegu",
+      "demonetized": "Wycofany z obiegu",
       "material": "Materiał",
       "size": "Rozmiar",
       "shape": "Kształt",
@@ -203,7 +228,7 @@
       "securityFeatures": "Zabezpieczenia",
       "desc": "Opis",
       "designers": "Projektanci",
-      "engravers": "Grawer",
+      "engravers": "Grawery",
       "text": "Tekst"
     }
   },
@@ -217,9 +242,9 @@
     "total": "Łącznie",
     "noData": "Brak danych",
     "gradesTitle": "Rozkład według stanu",
-    "topCountriesTitle": "Top krajów",
+    "topCountriesTitle": "Najpopularniejsze kraje",
     "moreCountries": "+{n} kolejnych krajów",
-    "mapError": "Nie udało się załadować mapy. Sprawdź połączenie internetowe.",
+    "mapError": "Nie można załadować mapy. Sprawdź połączenie z internetem.",
     "authRequired": "Zaloguj się, aby zobaczyć statystyki"
   }
 }
