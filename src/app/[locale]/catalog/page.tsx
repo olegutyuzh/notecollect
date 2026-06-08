@@ -12,6 +12,7 @@ interface SearchParams {
   category?: string
   year_from?: string
   year_to?: string
+  country?: string
 }
 
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
@@ -29,6 +30,14 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
   if (sp.category)  query = query.eq('category', sp.category)
   if (sp.year_from) query = query.gte('min_year', parseInt(sp.year_from))
   if (sp.year_to)   query = query.lte('max_year', parseInt(sp.year_to))
+  if (sp.country) {
+    const { data: countryRow } = await supabase
+      .from('countries')
+      .select('id')
+      .eq('code', sp.country)
+      .single()
+    if (countryRow) query = query.eq('country_id', countryRow.id)
+  }
 
   const { data: collectibles } = await query.limit(120)
 

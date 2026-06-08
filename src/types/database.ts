@@ -50,6 +50,32 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['collectibles']['Row'], 'id'>
         Update: Partial<Database['public']['Tables']['collectibles']['Insert']>
       }
+      collectible_details: {
+        Row: {
+          collectible_id: number
+          description: string | null
+          obverse_description: string | null
+          reverse_description: string | null
+          obverse_picture: string | null
+          reverse_picture: string | null
+          demonetized: boolean | null
+          demonetization_date: string | null
+          denominations: Json | null
+          references_data: Json | null
+          series: Json | null
+          size: number | null
+          weight: number | null
+          raw_data: Json | null
+          fetched_at: string | null
+          collectible_type_id: number | null
+          issuer_code: string | null
+          title: string | null
+          category: string | null
+          references: Json | null
+        }
+        Insert: Database['public']['Tables']['collectible_details']['Row']
+        Update: Partial<Database['public']['Tables']['collectible_details']['Row']>
+      }
       collectible_variations: {
         Row: {
           id: number

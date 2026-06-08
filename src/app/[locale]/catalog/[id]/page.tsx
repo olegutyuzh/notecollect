@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import Image from 'next/image'
 import { Link } from '@/i18n/navigation'
 import { notFound } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Tag } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import type { CollectibleWithRelations, CollectibleVariation } from '@/types/database'
 import { AddToCollectionButton } from '@/components/ui/AddToCollectionButton'
@@ -14,36 +14,57 @@ const CATEGORY_LABELS: Record<string, string> = {
   exonumia: 'Екзонумія',
 }
 
+// Typed helpers for raw_data JSONB
+interface RawData {
+  shape?: string
+  size2?: number
+  tags?: string[]
+  composition?: { text?: string }
+  watermark?: { description?: string; thumbnail?: string; picture?: string }
+  obverse?: { picture?: string; lettering?: string; lettering_translation?: string }
+  reverse?: { picture?: string; lettering?: string; lettering_translation?: string }
+  comments?: string
+  issuing_entity?: { name?: string }
+  value?: { currency?: { name?: string }; text?: string }
+  ruler?: { name?: string }[]
+  demonetization?: { is_demonetized?: boolean }
+}
+
+function asRaw(json: unknown): RawData {
+  return (json ?? {}) as RawData
+}
+
+function parseReferences(refs: unknown): { number: string; code: string }[] {
+  if (!Array.isArray(refs)) return []
+  return refs.map((r: any) => ({
+    number: r?.number ?? '',
+    code: r?.catalogue?.code ?? '',
+  })).filter(r => r.number)
+}
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+}
+
 export default async function CollectiblePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createServerSupabaseClient()
   const t = await getTranslations('Catalog')
 
-  // Get current user (may be null for unauthenticated visitors)
   const { data: { user } } = await supabase.auth.getUser()
 
   const [
     { data: collectible },
     { data: variations },
     { data: userItems },
+    { data: details },
   ] = await Promise.all([
-    supabase
-      .from('collectibles')
-      .select('*, countries(*)')
-      .eq('id', id)
-      .single(),
-    supabase
-      .from('collectible_variations')
-      .select('*')
-      .eq('collectible_id', id)
-      .order('gregorian_year', { ascending: true }),
+    supabase.from('collectibles').select('*, countries(*)').eq('id', id).single(),
+    supabase.from('collectible_variations').select('*').eq('collectible_id', id).order('gregorian_year', { ascending: true }),
     user
-      ? supabase
-          .from('collected_items')
-          .select('id, collectible_variation_id, grade, quantity')
-          .eq('collectible_id', id)
-          .eq('user_id', user.id)
+      ? supabase.from('collected_items').select('id, collectible_variation_id, grade, quantity').eq('collectible_id', id).eq('user_id', user.id)
       : Promise.resolve({ data: [] }),
+    supabase.from('collectible_details').select('*').eq('collectible_id', id).maybeSingle(),
   ])
 
   if (!collectible) notFound()
@@ -51,19 +72,47 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
   const c = collectible as CollectibleWithRelations
   const country = c.countries
   const vars = (variations ?? []) as CollectibleVariation[]
+  const d = details ?? null
+  const raw = d ? asRaw(d.raw_data) : {} as RawData
 
   const years = c.max_year && c.max_year !== c.min_year
     ? `${c.min_year}–${c.max_year}`
     : c.min_year?.toString() ?? '—'
 
-  const details = [
-    { label: 'Категорія',  value: CATEGORY_LABELS[c.category] ?? c.category },
-    { label: 'Тип',        value: c.object_type_name ?? '—' },
-    { label: 'Емітент',    value: c.issuer_name ?? '—' },
-    { label: 'Роки',       value: years },
-    { label: 'Країна',     value: country ? `${country.flag_emoji ?? ''} ${country.name_uk ?? country.name_en}`.trim() : '—' },
-    { label: 'Numista ID', value: c.id.toString() },
-  ]
+  // Use full-res images from raw_data if available, else fallback to thumbnail→600
+  const obversePicture = raw.obverse?.picture
+    ?? (c.obverse_thumbnail ? c.obverse_thumbnail.replace('-180.jpg', '-600.jpg').replace('-180.png', '-600.png') : null)
+  const reversePicture = raw.reverse?.picture
+    ?? (c.reverse_thumbnail ? c.reverse_thumbnail.replace('-180.jpg', '-600.jpg').replace('-180.png', '-600.png') : null)
+
+  const refs = parseReferences(d?.references_data)
+  const sizeLabel = d?.size
+    ? raw.size2 ? `${d.size} × ${raw.size2} мм` : `${d.size} мм`
+    : null
+  const material = raw.composition?.text ?? null
+  const currency = raw.value?.currency?.name ?? null
+  const issuingEntity = raw.issuing_entity?.name ?? null
+  const ruler = raw.ruler?.[0]?.name ?? null
+
+  const mainDetails = [
+    { label: 'Категорія',   value: CATEGORY_LABELS[c.category] ?? c.category },
+    { label: 'Тип',         value: c.object_type_name ?? null },
+    { label: 'Валюта',      value: currency },
+    { label: 'Серія',       value: typeof d?.series === 'string' ? d.series : null },
+    { label: 'Емітент',     value: c.issuer_name ?? null },
+    { label: 'Орган емісії',value: issuingEntity },
+    { label: 'Правитель',   value: ruler },
+    { label: 'Роки',        value: years },
+    { label: 'Країна',      value: country ? `${country.flag_emoji ?? ''} ${country.name_uk ?? country.name_en}`.trim() : null },
+    { label: 'Матеріал',    value: material },
+    { label: 'Розмір',      value: sizeLabel },
+    { label: 'Вага',        value: d?.weight ? `${d.weight} г` : null },
+    { label: 'Форма',       value: raw.shape ?? null },
+    { label: 'Демонетизовано', value: d?.demonetized ? (d.demonetization_date ? `Так (${d.demonetization_date})` : 'Так') : null },
+  ].filter(row => row.value)
+
+  const tags = raw.tags ?? []
+  const comments = raw.comments ? stripHtml(raw.comments) : null
 
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8">
@@ -75,35 +124,43 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Images */}
         <div className="space-y-3">
-          {c.obverse_thumbnail ? (
+          {obversePicture ? (
             <div className="card overflow-hidden">
               <div className="bg-gray-50 px-3 py-1.5 border-b border-gray-100 text-xs text-gray-500">{t('detail.obverse')}</div>
               <div className="relative aspect-[2/1]">
-                <Image
-                  src={c.obverse_thumbnail.replace('-180.jpg', '-600.jpg')}
-                  alt={t('detail.obverse')}
-                  fill
-                  className="object-contain p-2"
-                />
+                <Image src={obversePicture} alt={t('detail.obverse')} fill className="object-contain p-2" />
               </div>
             </div>
           ) : null}
-          {c.reverse_thumbnail ? (
+          {reversePicture ? (
             <div className="card overflow-hidden">
               <div className="bg-gray-50 px-3 py-1.5 border-b border-gray-100 text-xs text-gray-500">{t('detail.reverse')}</div>
               <div className="relative aspect-[2/1]">
+                <Image src={reversePicture} alt={t('detail.reverse')} fill className="object-contain p-2" />
+              </div>
+            </div>
+          ) : null}
+          {!obversePicture && !reversePicture && (
+            <div className="card flex items-center justify-center aspect-[2/1] text-gray-300">
+              <p className="text-sm">{t('detail.noPhoto')}</p>
+            </div>
+          )}
+
+          {/* Watermark image */}
+          {raw.watermark?.thumbnail && (
+            <div className="card overflow-hidden">
+              <div className="bg-gray-50 px-3 py-1.5 border-b border-gray-100 text-xs text-gray-500">{t('detail.watermark')}</div>
+              <div className="relative aspect-[2/1]">
                 <Image
-                  src={c.reverse_thumbnail.replace('-180.jpg', '-600.jpg')}
-                  alt={t('detail.reverse')}
+                  src={raw.watermark.picture ?? raw.watermark.thumbnail}
+                  alt="Watermark"
                   fill
                   className="object-contain p-2"
                 />
               </div>
-            </div>
-          ) : null}
-          {!c.obverse_thumbnail && !c.reverse_thumbnail && (
-            <div className="card flex items-center justify-center aspect-[2/1] text-gray-300">
-              <p className="text-sm">{t('detail.noPhoto')}</p>
+              {raw.watermark.description && (
+                <p className="px-3 py-2 text-xs text-gray-500">{raw.watermark.description}</p>
+              )}
             </div>
           )}
         </div>
@@ -111,21 +168,48 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
         {/* Info */}
         <div>
           <h1 className="text-2xl font-bold text-gray-900 mb-1">{c.title}</h1>
-          <p className="text-gray-500 mb-6">
+          <p className="text-gray-500 mb-4">
             {country?.flag_emoji} {c.issuer_name}
             {c.min_year && ` · ${years}`}
           </p>
 
+          {/* Tags */}
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {tags.map(tag => (
+                <span key={tag} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600 rounded-full px-2.5 py-1">
+                  <Tag className="h-2.5 w-2.5" />
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
           <AddToCollectionButton collectible={c} />
 
-          <div className="card divide-y divide-gray-100 mt-6">
-            {details.map(({ label, value }) => (
-              <div key={label} className="flex justify-between px-4 py-3 text-sm">
-                <span className="text-gray-500">{label}</span>
-                <span className="text-gray-900 font-medium text-right max-w-[60%]">{value}</span>
+          {/* Main details table */}
+          <div className="card divide-y divide-gray-100 mt-5">
+            {mainDetails.map(({ label, value }) => (
+              <div key={label} className="flex justify-between px-4 py-2.5 text-sm">
+                <span className="text-gray-500 shrink-0 mr-3">{label}</span>
+                <span className="text-gray-900 font-medium text-right">{value}</span>
               </div>
             ))}
           </div>
+
+          {/* Catalog references */}
+          {refs.length > 0 && (
+            <div className="card px-4 py-3 mt-3">
+              <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">Каталожні номери</p>
+              <div className="flex flex-wrap gap-2">
+                {refs.map((r, i) => (
+                  <span key={i} className="inline-block bg-blue-50 text-blue-800 text-sm font-mono rounded px-2 py-0.5">
+                    {r.code}-{r.number}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Variations */}
           {vars.length > 0 && (
@@ -138,6 +222,54 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
           )}
         </div>
       </div>
+
+      {/* Full-width sections below */}
+      {(d?.obverse_description || d?.reverse_description || raw.obverse?.lettering || raw.reverse?.lettering || comments) && (
+        <div className="mt-8 space-y-4">
+
+          {/* Obverse description */}
+          {d?.obverse_description && (
+            <div className="card p-5">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('detail.obverseDesc')}</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">{d.obverse_description}</p>
+              {raw.obverse?.lettering && (
+                <div className="mt-3 border-t border-gray-100 pt-3">
+                  <p className="text-xs text-gray-400 mb-1">Напис на банкноті</p>
+                  <pre className="text-xs text-gray-600 whitespace-pre-wrap font-mono bg-gray-50 rounded p-2">{raw.obverse.lettering}</pre>
+                  {raw.obverse.lettering_translation && (
+                    <p className="text-xs text-gray-500 italic mt-1">{raw.obverse.lettering_translation}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Reverse description */}
+          {d?.reverse_description && (
+            <div className="card p-5">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('detail.reverseDesc')}</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">{d.reverse_description}</p>
+              {raw.reverse?.lettering && (
+                <div className="mt-3 border-t border-gray-100 pt-3">
+                  <p className="text-xs text-gray-400 mb-1">Напис на банкноті</p>
+                  <pre className="text-xs text-gray-600 whitespace-pre-wrap font-mono bg-gray-50 rounded p-2">{raw.reverse.lettering}</pre>
+                  {raw.reverse.lettering_translation && (
+                    <p className="text-xs text-gray-500 italic mt-1">{raw.reverse.lettering_translation}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Comments */}
+          {comments && (
+            <div className="card p-5">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">Коментарі</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">{comments}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

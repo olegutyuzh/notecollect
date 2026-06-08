@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from '@/types/database'
-import { Link } from '@/i18n/navigation'
+import { Link, useRouter } from '@/i18n/navigation'
 import { Globe, AlertCircle } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { select } from 'd3-selection'
@@ -165,6 +165,7 @@ function YearChart({ data }: { data: YearStat[] }) {
 
 export default function StatsPage() {
   const t = useTranslations('Stats')
+  const router = useRouter()
   const [loading, setLoading]           = useState(true)
   const [authError, setAuthError]       = useState(false)
   const [countryStats, setCountryStats] = useState<CountryStat[]>([])
@@ -290,7 +291,11 @@ export default function StatsPage() {
     const infoByA2:  Record<string, string>  = {}
     for (const c of countryStats) {
       countByA2[c.code] = c.count
-      infoByA2[c.code]  = `${c.flag} ${c.name} · ${c.count}`
+      infoByA2[c.code]  = `${c.flag} ${c.name} · ${c.count} шт.`
+    }
+
+    const handleCountryClick = (a2: string) => {
+      router.push(`/collection?country=${a2}`)
     }
 
     async function render() {
@@ -323,9 +328,14 @@ export default function StatsPage() {
           const a2 = NUM_TO_A2[parseInt(d.id)]
           if (!a2 || !infoByA2[a2]) return
           const rect = el.getBoundingClientRect()
-          setTooltip({ x: event.clientX - rect.left + 12, y: event.clientY - rect.top - 36, html: infoByA2[a2] })
+          setTooltip({ x: event.clientX - rect.left + 12, y: event.clientY - rect.top - 36, html: infoByA2[a2] + ' →' })
         })
         .on('mouseleave', () => setTooltip(null))
+        .on('click', (_event: MouseEvent, d: any) => {
+          const a2 = NUM_TO_A2[parseInt(d.id)]
+          if (!a2 || !countByA2[a2]) return
+          handleCountryClick(a2)
+        })
 
       svg.append('path').datum(geoGraticule()())
         .attr('fill', 'none').attr('stroke', '#cbd5e1').attr('stroke-width', 0.3).attr('d', path as any)
@@ -334,6 +344,7 @@ export default function StatsPage() {
     }
 
     render().catch(() => setMapError(true))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, authError, countryStats])
 
   if (loading) return (
@@ -474,10 +485,14 @@ export default function StatsPage() {
           ) : (
             <div className="space-y-2">
               {countryStats.slice(0, 12).map((c, i) => (
-                <div key={c.code} className="flex items-center gap-2">
+                <Link
+                  key={c.code}
+                  href={`/collection?country=${c.code}`}
+                  className="flex items-center gap-2 group hover:bg-blue-50 rounded-lg px-1 -mx-1 transition-colors"
+                >
                   <span className="text-xs text-gray-400 w-5 text-right">{i + 1}</span>
                   <span className="text-base w-6 text-center leading-none">{c.flag}</span>
-                  <span className="text-sm text-gray-700 flex-1 truncate">{c.name}</span>
+                  <span className="text-sm text-gray-700 flex-1 truncate group-hover:text-blue-700">{c.name}</span>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <div className="w-20 bg-gray-100 rounded-full h-1.5 overflow-hidden">
                       <div
@@ -487,7 +502,7 @@ export default function StatsPage() {
                     </div>
                     <span className="text-sm font-semibold text-gray-900 w-8 text-right">{c.count}</span>
                   </div>
-                </div>
+                </Link>
               ))}
               {countryStats.length > 12 && (
                 <p className="text-xs text-gray-400 pt-1">+{countryStats.length - 12}</p>
