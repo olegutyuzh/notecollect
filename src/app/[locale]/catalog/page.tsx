@@ -40,7 +40,11 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
     .limit(2000)
 
   const issuers = [
-    ...new Set((issuerRows ?? []).map(r => r.issuer_name).filter(Boolean) as string[])
+    ...new Set(
+      ((issuerRows ?? []) as { issuer_name: string | null }[])
+        .map(r => r.issuer_name)
+        .filter(Boolean) as string[]
+    )
   ].sort()
 
   const hasSearch = Object.values(sp).some(Boolean)
