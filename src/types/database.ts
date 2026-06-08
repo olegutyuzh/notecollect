@@ -89,12 +89,29 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['collected_items']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['collected_items']['Insert']>
       }
+      currencies: {
+        Row: {
+          id: number
+          name_en: string | null
+          name_uk: string | null
+          code: string | null
+          symbol: string | null
+          status: string | null
+          valid_from: string | null
+          valid_to: string | null
+          replaced_by_code: string | null
+          numeric_code: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['currencies']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['currencies']['Insert']>
+      }
     }
   }
 }
 
 // ── Convenience aliases ────────────────────────────────────────────────────
 export type Country              = Database['public']['Tables']['countries']['Row']
+export type Currency             = Database['public']['Tables']['currencies']['Row']
 export type Issuer               = Database['public']['Tables']['issuers']['Row']
 export type Collectible          = Database['public']['Tables']['collectibles']['Row']
 export type CollectibleVariation = Database['public']['Tables']['collectible_variations']['Row']
