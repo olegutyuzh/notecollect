@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import Image from 'next/image'
 import { Link } from '@/i18n/navigation'
 import { Star, Plus, X } from 'lucide-react'
-import type { CollectedItemWithCollectible } from '@/types/database'
+import type { CollectedItemWithCollectible, Country } from '@/types/database'
 import { getTranslations } from 'next-intl/server'
 
 interface SearchParams {
@@ -39,7 +39,7 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
       .from('countries')
       .select('id, name_uk, name_en, flag_emoji')
       .eq('code', sp.country)
-      .single()
+      .single() as unknown as { data: Pick<Country, 'id' | 'name_uk' | 'name_en' | 'flag_emoji'> | null }
     if (countryRow) {
       countryId = countryRow.id
       countryName = countryRow.name_uk ?? countryRow.name_en ?? sp.country

@@ -4,7 +4,7 @@ import { CatalogFilters } from '@/components/ui/CatalogFilters'
 import { CatalogEmpty } from '@/components/ui/CatalogEmpty'
 import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
-import type { CollectibleWithRelations } from '@/types/database'
+import type { CollectibleWithRelations, Country } from '@/types/database'
 
 interface SearchParams {
   q?: string
@@ -35,7 +35,7 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
       .from('countries')
       .select('id')
       .eq('code', sp.country)
-      .single()
+      .single() as unknown as { data: Pick<Country, 'id'> | null }
     if (countryRow) query = query.eq('country_id', countryRow.id)
   }
 

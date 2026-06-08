@@ -73,8 +73,29 @@ export interface Database {
           category: string | null
           references: Json | null
         }
-        Insert: Database['public']['Tables']['collectible_details']['Row']
-        Update: Partial<Database['public']['Tables']['collectible_details']['Row']>
+        Insert: {
+          collectible_id: number
+          description?: string | null
+          obverse_description?: string | null
+          reverse_description?: string | null
+          obverse_picture?: string | null
+          reverse_picture?: string | null
+          demonetized?: boolean | null
+          demonetization_date?: string | null
+          denominations?: Json | null
+          references_data?: Json | null
+          series?: Json | null
+          size?: number | null
+          weight?: number | null
+          raw_data?: Json | null
+          fetched_at?: string | null
+          collectible_type_id?: number | null
+          issuer_code?: string | null
+          title?: string | null
+          category?: string | null
+          references?: Json | null
+        }
+        Update: Partial<Database['public']['Tables']['collectible_details']['Insert']>
       }
       collectible_variations: {
         Row: {
@@ -137,6 +158,7 @@ export interface Database {
 
 // ── Convenience aliases ────────────────────────────────────────────────────
 export type Country              = Database['public']['Tables']['countries']['Row']
+export type CollectibleDetails   = Database['public']['Tables']['collectible_details']['Row']
 export type Currency             = Database['public']['Tables']['currencies']['Row']
 export type Issuer               = Database['public']['Tables']['issuers']['Row']
 export type Collectible          = Database['public']['Tables']['collectibles']['Row']

@@ -4,7 +4,7 @@ import { Link } from '@/i18n/navigation'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, Tag } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
-import type { CollectibleWithRelations, CollectibleVariation } from '@/types/database'
+import type { CollectibleWithRelations, CollectibleVariation, CollectibleDetails } from '@/types/database'
 import { AddToCollectionButton } from '@/components/ui/AddToCollectionButton'
 import { VariationsTable } from '@/components/ui/VariationsTable'
 
@@ -57,7 +57,7 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
     { data: collectible },
     { data: variations },
     { data: userItems },
-    { data: details },
+    detailsResult,
   ] = await Promise.all([
     supabase.from('collectibles').select('*, countries(*)').eq('id', id).single(),
     supabase.from('collectible_variations').select('*').eq('collectible_id', id).order('gregorian_year', { ascending: true }),
@@ -66,6 +66,8 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
       : Promise.resolve({ data: [] }),
     supabase.from('collectible_details').select('*').eq('collectible_id', id).maybeSingle(),
   ])
+
+  const details = (detailsResult.data as unknown) as CollectibleDetails | null
 
   if (!collectible) notFound()
 
