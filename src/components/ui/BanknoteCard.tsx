@@ -11,9 +11,9 @@ interface BanknoteCardProps {
 
 export function BanknoteCard({ banknote, inCollection }: BanknoteCardProps) {
   const country = banknote.countries
-  const years = banknote.year_to
-    ? `${banknote.year_from}–${banknote.year_to}`
-    : banknote.year_from?.toString() ?? '—'
+  const years = banknote.max_year && banknote.max_year !== banknote.min_year
+    ? `${banknote.min_year}–${banknote.max_year}`
+    : banknote.min_year?.toString() ?? '—'
 
   return (
     <Link
@@ -22,10 +22,10 @@ export function BanknoteCard({ banknote, inCollection }: BanknoteCardProps) {
     >
       {/* Banknote image */}
       <div className="relative bg-gray-100 aspect-[2/1] overflow-hidden">
-        {banknote.image_obverse_url ? (
+        {banknote.obverse_thumbnail ? (
           <Image
-            src={banknote.image_obverse_url}
-            alt={banknote.denomination_text ?? ''}
+            src={banknote.obverse_thumbnail}
+            alt={banknote.title}
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
@@ -39,7 +39,7 @@ export function BanknoteCard({ banknote, inCollection }: BanknoteCardProps) {
         )}
         {inCollection && (
           <div className="absolute top-2 right-2">
-            <span className="badge bg-green-100 text-green-700">
+            <span className={cn('badge bg-green-100 text-green-700')}>
               <Star className="h-3 w-3 mr-1 fill-current" />
               У колекції
             </span>
@@ -53,17 +53,17 @@ export function BanknoteCard({ banknote, inCollection }: BanknoteCardProps) {
           <div className="min-w-0">
             <p className="font-semibold text-gray-900 truncate">
               {country?.flag_emoji && <span className="mr-1">{country.flag_emoji}</span>}
-              {banknote.denomination_text ?? `${banknote.denomination} ${banknote.currencies?.code ?? ''}`}
+              {banknote.title}
             </p>
             <p className="text-sm text-gray-500 mt-0.5">
-              {country?.name_uk ?? country?.name_en}
+              {country?.name_uk ?? country?.name_en ?? banknote.issuer_name}
             </p>
           </div>
           <span className="text-xs text-gray-400 whitespace-nowrap">{years}</span>
         </div>
 
-        {banknote.pick_number && (
-          <p className="mt-2 text-xs text-gray-400">Pick #{banknote.pick_number}</p>
+        {banknote.object_type_name && (
+          <p className="mt-2 text-xs text-gray-400">{banknote.object_type_name}</p>
         )}
       </div>
     </Link>
