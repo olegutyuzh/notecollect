@@ -4,10 +4,11 @@ import { Link } from '@/i18n/navigation'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import { BookOpen, CheckCircle } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 
 export default function ForgotPasswordPage() {
   const t = useTranslations('Auth.forgot')
+  const locale = useLocale()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -20,7 +21,7 @@ export default function ForgotPasswordPage() {
 
     const supabase = createClient()
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: `${window.location.origin}/${locale}/auth/reset-password`,
     })
 
     if (error) {
