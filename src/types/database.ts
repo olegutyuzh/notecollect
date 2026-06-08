@@ -121,6 +121,8 @@ export type CollectedItem        = Database['public']['Tables']['collected_items
 export type CollectibleWithRelations = Collectible & {
   countries: Country | null
 }
+/** @deprecated use CollectibleWithRelations */
+export type BanknoteWithRelations = CollectibleWithRelations
 
 export type CollectedItemWithCollectible = CollectedItem & {
   collectibles: CollectibleWithRelations
