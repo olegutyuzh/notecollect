@@ -1,36 +1,28 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { BookOpen, Library, Star, Menu, X, User, LogOut, Plus } from 'lucide-react'
+import { Link, usePathname, useRouter } from '@/i18n/navigation'
+import { BookOpen, Library, Star, Menu, X, LogOut, Plus, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
+import { useTranslations } from 'next-intl'
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
-
-const navLinks = [
-  { href: '/catalog', label: 'Каталог', icon: Library },
-  { href: '/collection', label: 'Моя колекція', icon: Star },
-]
 
 export function Header() {
   const pathname = usePathname()
   const router = useRouter()
+  const t = useTranslations('Nav')
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<SupabaseUser | null>(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
-
-    // Отримати поточного користувача
     supabase.auth.getUser().then(({ data }) => setUser(data.user))
-
-    // Слухати зміни авторизації
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       setUser(session?.user ?? null)
     })
-
     return () => subscription.unsubscribe()
   }, [])
 
@@ -42,10 +34,22 @@ export function Header() {
     router.refresh()
   }
 
+  const publicLinks = [
+    { href: '/catalog' as const, label: t('catalog'), icon: Library, exact: false },
+  ]
+
+  const privateLinks = [
+    { href: '/collection' as const, label: t('collection'), icon: Star, exact: true },
+    { href: '/collection/stats' as const, label: t('stats'), icon: Globe, exact: false },
+  ]
+
+  const navLinks = [...publicLinks, ...(user ? privateLinks : [])]
+
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
+
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 font-bold text-blue-700 text-lg">
             <BookOpen className="h-6 w-6" />
@@ -54,13 +58,13 @@ export function Header() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map(({ href, label, icon: Icon }) => (
+            {navLinks.map(({ href, label, icon: Icon, exact }) => (
               <Link
                 key={href}
                 href={href}
                 className={cn(
                   'flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                  pathname.startsWith(href)
+                  (exact ? pathname === href : pathname.startsWith(href))
                     ? 'bg-blue-50 text-blue-700'
                     : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 )}
@@ -73,6 +77,8 @@ export function Header() {
 
           {/* Auth area */}
           <div className="hidden md:flex items-center gap-2">
+            <LanguageSwitcher />
+
             {user ? (
               <div className="relative">
                 <button
@@ -95,7 +101,7 @@ export function Header() {
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <Plus className="h-4 w-4" />
-                        Додати банкноту
+                        {t('addBanknote')}
                       </Link>
                       <Link
                         href="/collection"
@@ -103,7 +109,15 @@ export function Header() {
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <Star className="h-4 w-4" />
-                        Моя колекція
+                        {t('collection')}
+                      </Link>
+                      <Link
+                        href="/collection/stats"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <Globe className="h-4 w-4" />
+                        {t('stats')}
                       </Link>
                       <div className="border-t border-gray-100 my-1" />
                       <button
@@ -111,7 +125,7 @@ export function Header() {
                         className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
                       >
                         <LogOut className="h-4 w-4" />
-                        Вийти
+                        {t('logout')}
                       </button>
                     </div>
                   </>
@@ -120,10 +134,10 @@ export function Header() {
             ) : (
               <>
                 <Link href="/auth/login" className="btn-secondary text-sm">
-                  Увійти
+                  {t('login')}
                 </Link>
                 <Link href="/auth/register" className="btn-primary text-sm">
-                  Реєстрація
+                  {t('register')}
                 </Link>
               </>
             )}
@@ -153,7 +167,10 @@ export function Header() {
               {label}
             </Link>
           ))}
-          <div className="pt-2 border-t border-gray-100">
+          <div className="pt-2 border-t border-gray-100 space-y-1">
+            <div className="px-3 py-1">
+              <LanguageSwitcher />
+            </div>
             {user ? (
               <>
                 <Link
@@ -162,20 +179,24 @@ export function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   <Plus className="h-4 w-4" />
-                  Додати банкноту
+                  {t('addBanknote')}
                 </Link>
                 <button
                   onClick={() => { handleLogout(); setMenuOpen(false) }}
                   className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
                 >
                   <LogOut className="h-4 w-4" />
-                  Вийти
+                  {t('logout')}
                 </button>
               </>
             ) : (
-              <div className="flex gap-2">
-                <Link href="/auth/login" className="btn-secondary flex-1 justify-center" onClick={() => setMenuOpen(false)}>Увійти</Link>
-                <Link href="/auth/register" className="btn-primary flex-1 justify-center" onClick={() => setMenuOpen(false)}>Реєстрація</Link>
+              <div className="flex gap-2 px-3 py-1">
+                <Link href="/auth/login" className="btn-secondary flex-1 justify-center" onClick={() => setMenuOpen(false)}>
+                  {t('login')}
+                </Link>
+                <Link href="/auth/register" className="btn-primary flex-1 justify-center" onClick={() => setMenuOpen(false)}>
+                  {t('register')}
+                </Link>
               </div>
             )}
           </div>

@@ -3,13 +3,13 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { AddToCollectionModal } from './AddToCollectionModal'
-import type { BanknoteWithRelations } from '@/types/database'
+import type { CollectibleWithRelations } from '@/types/database'
 
 interface Props {
-  banknote: BanknoteWithRelations
+  collectible: CollectibleWithRelations
 }
 
-export function AddToCollectionButton({ banknote }: Props) {
+export function AddToCollectionButton({ collectible }: Props) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -21,7 +21,7 @@ export function AddToCollectionButton({ banknote }: Props) {
 
       {open && (
         <AddToCollectionModal
-          banknote={banknote}
+          collectible={collectible}
           onClose={() => setOpen(false)}
           onSuccess={() => setOpen(false)}
         />

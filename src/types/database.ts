@@ -8,101 +8,124 @@ export interface Database {
           id: number
           name_en: string
           name_uk: string | null
+          name_local: string | null
           code: string | null
+          alpha3: string | null
           flag_emoji: string | null
         }
         Insert: Omit<Database['public']['Tables']['countries']['Row'], 'id'>
         Update: Partial<Database['public']['Tables']['countries']['Insert']>
       }
-      currencies: {
+      issuers: {
         Row: {
           id: number
           name_en: string
-          name_uk: string | null
+          is_section: boolean
           code: string | null
-          symbol: string | null
+          wikidata_id: string | null
+          start_year: number | null
+          end_year: number | null
+          parent_id: number | null
+          flag_url: string | null
         }
-        Insert: Omit<Database['public']['Tables']['currencies']['Row'], 'id'>
-        Update: Partial<Database['public']['Tables']['currencies']['Insert']>
+        Insert: Omit<Database['public']['Tables']['issuers']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['issuers']['Insert']>
       }
-      banknotes: {
+      collectibles: {
         Row: {
           id: number
+          title: string
+          category: string                 // 'banknote' | 'coin' | 'exonumia'
+          object_type_id: number | null
+          object_type_name: string | null
+          issuer_code: string | null
+          issuer_name: string | null
+          min_year: number | null
+          max_year: number | null
+          obverse_thumbnail: string | null
+          reverse_thumbnail: string | null
           country_id: number | null
-          currency_id: number | null
-          denomination: number
-          denomination_text: string | null
-          year_from: number | null
-          year_to: number | null
-          series: string | null
-          pick_number: string | null
-          issuer: string | null
-          size_width_mm: number | null
-          size_height_mm: number | null
-          material: string | null
-          obverse_description: string | null
-          reverse_description: string | null
-          watermark: string | null
-          security_features: string | null
-          printer: string | null
-          image_obverse_url: string | null
-          image_reverse_url: string | null
-          created_at: string
-          created_by: string | null
+          created_at: string | null
         }
-        Insert: Omit<Database['public']['Tables']['banknotes']['Row'], 'id' | 'created_at'>
-        Update: Partial<Database['public']['Tables']['banknotes']['Insert']>
+        Insert: Omit<Database['public']['Tables']['collectibles']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['collectibles']['Insert']>
       }
-      user_collections: {
+      collectible_variations: {
+        Row: {
+          id: number
+          collectible_id: number
+          is_dated: boolean
+          year: number | null
+          gregorian_year: number | null
+          signatures: Json
+          comment: string | null
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['collectible_variations']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['collectible_variations']['Insert']>
+      }
+      collected_items: {
         Row: {
           id: number
           user_id: string
-          banknote_id: number
-          grade: string | null
+          collectible_id: number
+          collectible_variation_id: number | null
           quantity: number
-          purchase_price: number | null
-          purchase_date: string | null
-          notes: string | null
-          public_notes: string | null
+          for_swap: boolean
+          grade: string | null
+          price_value: number | null
+          price_currency: string | null
           serial_number: string | null
+          private_comment: string | null
+          public_comment: string | null
+          pictures: Json
+          grading_company_id: number | null
           grading_company: string | null
-          grading_score: string | null
-          designation: string | null
-          cert_number: string | null
-          image_url: string | null
-          for_trade: boolean
-          for_sale: boolean
+          slab_grade: string | null
+          slab_number: string | null
+          grading_designations: Json
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['user_collections']['Row'], 'id' | 'created_at'>
-        Update: Partial<Database['public']['Tables']['user_collections']['Insert']>
-      }
-      user_wishlists: {
-        Row: {
-          id: number
-          user_id: string
-          banknote_id: number
-          created_at: string
-        }
-        Insert: Omit<Database['public']['Tables']['user_wishlists']['Row'], 'id' | 'created_at'>
-        Update: Partial<Database['public']['Tables']['user_wishlists']['Insert']>
+        Insert: Omit<Database['public']['Tables']['collected_items']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['collected_items']['Insert']>
       }
     }
   }
 }
 
-// Зручні аліаси
-export type Country = Database['public']['Tables']['countries']['Row']
-export type Currency = Database['public']['Tables']['currencies']['Row']
-export type Banknote = Database['public']['Tables']['banknotes']['Row']
-export type UserCollection = Database['public']['Tables']['user_collections']['Row']
-export type UserWishlist = Database['public']['Tables']['user_wishlists']['Row']
+// ── Convenience aliases ────────────────────────────────────────────────────
+export type Country              = Database['public']['Tables']['countries']['Row']
+export type Issuer               = Database['public']['Tables']['issuers']['Row']
+export type Collectible          = Database['public']['Tables']['collectibles']['Row']
+export type CollectibleVariation = Database['public']['Tables']['collectible_variations']['Row']
+export type CollectedItem        = Database['public']['Tables']['collected_items']['Row']
 
-export type BanknoteWithRelations = Banknote & {
+// ── With relations ─────────────────────────────────────────────────────────
+export type CollectibleWithRelations = Collectible & {
   countries: Country | null
-  currencies: Currency | null
 }
 
-export type CollectionItemWithBanknote = UserCollection & {
-  banknotes: BanknoteWithRelations
+export type CollectedItemWithCollectible = CollectedItem & {
+  collectibles: CollectibleWithRelations
+}
+
+export type CollectedItemFull = CollectedItem & {
+  collectibles: CollectibleWithRelations
+  collectible_variations: CollectibleVariation | null
+}
+
+// ── Helper types ───────────────────────────────────────────────────────────
+export type NumistaSignature = {
+  signer_name: string
+  title?: string
+}
+
+export type NumistaPicture = {
+  url: string
+  thumbnail_url?: string
+}
+
+export type GradingDesignation = {
+  id: number
+  value: string
 }
