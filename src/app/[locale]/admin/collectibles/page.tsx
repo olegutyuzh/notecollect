@@ -1,9 +1,15 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { CollectiblesTable } from './CollectiblesTable'
 
-interface SearchParams { q?: string; page?: string; country?: string; currency?: string }
+interface SearchParams { q?: string; page?: string; country?: string; currency?: string; category?: string }
 
 const PAGE_SIZE = 50
+
+const CATEGORIES = [
+  { code: 'BKNT', label: 'Банкнота' },
+  { code: 'COIN', label: 'Монета' },
+  { code: 'EXON', label: 'Екзонумія' },
+]
 
 export default async function AdminCollectiblesPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const sp = await searchParams
@@ -13,12 +19,14 @@ export default async function AdminCollectiblesPage({ searchParams }: { searchPa
   const offset = (page - 1) * PAGE_SIZE
   const countryId = sp.country ? parseInt(sp.country) : null
   const currencyId = sp.currency ? parseInt(sp.currency) : null
+  const category = sp.category ?? null
 
   // Count query
   let countQ = supabase.from('collectibles').select('*', { count: 'exact', head: true })
   if (sp.q) countQ = countQ.ilike('title', `%${sp.q}%`)
   if (countryId) countQ = countQ.eq('country_id', countryId)
   if (currencyId) countQ = countQ.eq('currency_id', currencyId)
+  if (category) countQ = countQ.eq('category_code', category)
   const { count: total } = await countQ
 
   // Data query
@@ -30,6 +38,7 @@ export default async function AdminCollectiblesPage({ searchParams }: { searchPa
   if (sp.q) dataQ = dataQ.ilike('title', `%${sp.q}%`)
   if (countryId) dataQ = dataQ.eq('country_id', countryId)
   if (currencyId) dataQ = dataQ.eq('currency_id', currencyId)
+  if (category) dataQ = dataQ.eq('category_code', category)
   const { data: collectibles } = await dataQ
 
   // Countries for filter dropdown
@@ -45,13 +54,14 @@ export default async function AdminCollectiblesPage({ searchParams }: { searchPa
     .order('name_en')
 
   const totalPages = Math.ceil((total ?? 0) / PAGE_SIZE)
-  const activeFilters = [sp.q, sp.country, sp.currency].filter(Boolean).length
+  const activeFilters = [sp.q, sp.country, sp.currency, sp.category].filter(Boolean).length
 
   function pageHref(p: number) {
     const params = new URLSearchParams()
     if (sp.q) params.set('q', sp.q)
     if (sp.country) params.set('country', sp.country)
     if (sp.currency) params.set('currency', sp.currency)
+    if (sp.category) params.set('category', sp.category)
     params.set('page', String(p))
     return `/admin/collectibles?${params.toString()}`
   }
@@ -75,6 +85,19 @@ export default async function AdminCollectiblesPage({ searchParams }: { searchPa
             placeholder="Пошук за назвою..."
             className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-60 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Категорія</label>
+          <select
+            name="category"
+            defaultValue={sp.category ?? ''}
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+          >
+            <option value="">— всі —</option>
+            {CATEGORIES.map(cat => (
+              <option key={cat.code} value={cat.code}>{cat.label}</option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-xs text-gray-500 mb-1">Країна</label>
