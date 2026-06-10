@@ -42,16 +42,18 @@ export default async function AdminCollectiblesPage({ searchParams }: { searchPa
   const { data: collectibles } = await dataQ
 
   // Countries for filter dropdown
-  const { data: countries } = await supabase
+  const { data: countriesRaw } = await supabase
     .from('countries')
     .select('id, name_uk, name_en, flag_emoji')
     .order('name_uk')
+  const countries = countriesRaw as Array<{ id: number; name_uk: string | null; name_en: string | null; flag_emoji: string | null }> | null
 
   // Currencies for filter dropdown
-  const { data: currencies } = await supabase
+  const { data: currenciesRaw } = await supabase
     .from('currencies')
     .select('id, name_en, name_uk, code')
     .order('name_en')
+  const currencies = currenciesRaw as Array<{ id: number; name_en: string | null; name_uk: string | null; code: string | null }> | null
 
   const totalPages = Math.ceil((total ?? 0) / PAGE_SIZE)
   const activeFilters = [sp.q, sp.country, sp.currency, sp.category].filter(Boolean).length
