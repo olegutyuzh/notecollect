@@ -9,7 +9,6 @@ interface Props {
 export function Pagination({ currentPage, totalPages, getHref }: Props) {
   if (totalPages <= 1) return null
 
-  // Build page number list with ellipsis
   const pages: (number | '...')[] = []
   if (totalPages <= 7) {
     for (let i = 1; i <= totalPages; i++) pages.push(i)
@@ -27,26 +26,25 @@ export function Pagination({ currentPage, totalPages, getHref }: Props) {
 
   return (
     <div className="flex items-center justify-center gap-1 mt-8 pb-4">
-      {/* Prev */}
       {currentPage > 1 ? (
-        <Link href={getHref(currentPage - 1)} className={`${base} border border-gray-200 text-gray-600 hover:bg-gray-100`}>
+        <Link href={getHref(currentPage - 1)} className={`${base} border border-white/10 text-slate-400 hover:bg-white/8 hover:text-slate-200`}>
           ‹
         </Link>
       ) : (
-        <span className={`${base} border border-gray-100 text-gray-300 cursor-not-allowed`}>‹</span>
+        <span className={`${base} border border-white/5 text-slate-700 cursor-not-allowed`}>‹</span>
       )}
 
       {pages.map((p, i) =>
         p === '...' ? (
-          <span key={`e${i}`} className={`${base} text-gray-400`}>…</span>
+          <span key={`e${i}`} className={`${base} text-slate-600`}>…</span>
         ) : (
           <Link
             key={p}
             href={getHref(p)}
             className={`${base} ${
               p === currentPage
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'border border-gray-200 text-gray-600 hover:bg-gray-100'
+                ? 'bg-[#c9a96e] text-[#07111f] font-bold shadow-sm'
+                : 'border border-white/10 text-slate-400 hover:bg-white/8 hover:text-slate-200'
             }`}
           >
             {p}
@@ -54,13 +52,12 @@ export function Pagination({ currentPage, totalPages, getHref }: Props) {
         )
       )}
 
-      {/* Next */}
       {currentPage < totalPages ? (
-        <Link href={getHref(currentPage + 1)} className={`${base} border border-gray-200 text-gray-600 hover:bg-gray-100`}>
+        <Link href={getHref(currentPage + 1)} className={`${base} border border-white/10 text-slate-400 hover:bg-white/8 hover:text-slate-200`}>
           ›
         </Link>
       ) : (
-        <span className={`${base} border border-gray-100 text-gray-300 cursor-not-allowed`}>›</span>
+        <span className={`${base} border border-white/5 text-slate-700 cursor-not-allowed`}>›</span>
       )}
     </div>
   )
