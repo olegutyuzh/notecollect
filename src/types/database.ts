@@ -322,6 +322,7 @@ export type Database = {
         Row: {
           category_code: string
           country_id: number | null
+          currency_id: number | null
           created_at: string | null
           id: number
           issuer_code: string | null
@@ -337,6 +338,7 @@ export type Database = {
         Insert: {
           category_code: string
           country_id?: number | null
+          currency_id?: number | null
           created_at?: string | null
           id: number
           issuer_code?: string | null
@@ -352,6 +354,7 @@ export type Database = {
         Update: {
           category_code?: string
           country_id?: number | null
+          currency_id?: number | null
           created_at?: string | null
           id?: number
           issuer_code?: string | null
