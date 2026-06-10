@@ -9,13 +9,18 @@ import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
-export function Header() {
+interface HeaderProps {
+  /** Admin status resolved server-side and passed as initial value */
+  initialIsAdmin?: boolean
+}
+
+export function Header({ initialIsAdmin = false }: HeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
   const t = useTranslations('Nav')
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<SupabaseUser | null>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(initialIsAdmin)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -23,13 +28,13 @@ export function Header() {
 
     async function syncUser(userId: string | undefined) {
       if (!userId) { setIsAdmin(false); return }
-      const { data: profile } = await supabase
+      const res = await supabase
         .from('profiles')
         .select('role')
         .eq('id', userId)
         .single()
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setIsAdmin((profile as any)?.role === 'admin')
+      const profile = res.data as { role: string } | null
+      setIsAdmin(profile?.role === 'admin')
     }
 
     // onAuthStateChange fires immediately with INITIAL_SESSION,
