@@ -1,10 +1,33 @@
 import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { Library, Star, Users, Search } from 'lucide-react'
+import { createAdminSupabaseClient } from '@/lib/supabase-admin'
+
+interface HomepageStats {
+  notes_count: number
+  countries_count: number
+  collectors_count: number
+}
+
+async function getStats(): Promise<HomepageStats> {
+  try {
+    const admin = createAdminSupabaseClient()
+    const { data, error } = await admin.rpc('get_homepage_stats')
+    if (error || !data) return { notes_count: 0, countries_count: 0, collectors_count: 0 }
+    return data as HomepageStats
+  } catch {
+    return { notes_count: 0, countries_count: 0, collectors_count: 0 }
+  }
+}
+
+function formatNumber(n: number): string {
+  if (n >= 1000) return n.toLocaleString('uk-UA')
+  return String(n)
+}
 
 export default async function HomePage() {
   const t = await getTranslations('Home')
-  const tn = await getTranslations('Nav')
+  const stats = await getStats()
 
   return (
     <div>
@@ -29,16 +52,18 @@ export default async function HomePage() {
       <section className="bg-white border-b border-gray-200 py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-3 gap-4 text-center">
-            {([
-              ['0', t('statsSection.notes')],
-              ['0', t('statsSection.countries')],
-              ['0', t('statsSection.collectors')],
-            ] as [string, string][]).map(([value, label]) => (
-              <div key={label}>
-                <p className="text-2xl font-bold text-blue-700">{value}</p>
-                <p className="text-sm text-gray-500 mt-1">{label}</p>
-              </div>
-            ))}
+            <div>
+              <p className="text-2xl font-bold text-blue-700">{formatNumber(stats.notes_count)}</p>
+              <p className="text-sm text-gray-500 mt-1">{t('statsSection.notes')}</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-blue-700">{formatNumber(stats.countries_count)}</p>
+              <p className="text-sm text-gray-500 mt-1">{t('statsSection.countries')}</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-blue-700">{formatNumber(stats.collectors_count)}</p>
+              <p className="text-sm text-gray-500 mt-1">{t('statsSection.collectors')}</p>
+            </div>
           </div>
         </div>
       </section>
