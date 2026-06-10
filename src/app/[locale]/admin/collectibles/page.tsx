@@ -14,44 +14,38 @@ export default async function AdminCollectiblesPage({ searchParams }: { searchPa
   const countryId = sp.country ? parseInt(sp.country) : null
   const currencyId = sp.currency ? parseInt(sp.currency) : null
 
-  // Build shared filter helper
-  function applyFilters<T extends ReturnType<typeof supabase.from>>(q: T): T {
-    let r = q as unknown as ReturnType<typeof supabase.from>
-    if (sp.q) r = r.ilike('title', `%${sp.q}%`)
-    if (countryId) r = r.eq('country_id', countryId)
-    if (currencyId) r = r.eq('currency_id', currencyId)
-    return r as T
-  }
-
-  // Count
-  const countQ = applyFilters(
-    supabase.from('collectibles').select('*', { count: 'exact', head: true })
-  )
+  // Count query
+  let countQ = supabase.from('collectibles').select('*', { count: 'exact', head: true })
+  if (sp.q) countQ = countQ.ilike('title', `%${sp.q}%`)
+  if (countryId) countQ = countQ.eq('country_id', countryId)
+  if (currencyId) countQ = countQ.eq('currency_id', currencyId)
   const { count: total } = await countQ
 
-  // Data
-  const dataQ = applyFilters(
-    supabase
-      .from('collectibles')
-      .select('id, title, issuer_name, min_year, max_year, category_code, country_id, currency_id, obverse_thumbnail, reverse_thumbnail, countries(id, name_uk, name_en, flag_emoji)')
-      .order('id', { ascending: false })
-      .range(offset, offset + PAGE_SIZE - 1)
-  )
+  // Data query
+  let dataQ = supabase
+    .from('collectibles')
+    .select('id, title, issuer_name, min_year, max_year, category_code, country_id, currency_id, obverse_thumbnail, reverse_thumbnail, countries(id, name_uk, name_en, flag_emoji)')
+    .order('id', { ascending: false })
+    .range(offset, offset + PAGE_SIZE - 1)
+  if (sp.q) dataQ = dataQ.ilike('title', `%${sp.q}%`)
+  if (countryId) dataQ = dataQ.eq('country_id', countryId)
+  if (currencyId) dataQ = dataQ.eq('currency_id', currencyId)
   const { data: collectibles } = await dataQ
 
-  // Countries dropdown (only those present in catalog)
+  // Countries for filter dropdown
   const { data: countries } = await supabase
     .from('countries')
     .select('id, name_uk, name_en, flag_emoji')
     .order('name_uk')
 
-  // Currencies dropdown (only those assigned to at least one collectible)
+  // Currencies for filter dropdown
   const { data: currencies } = await supabase
     .from('currencies')
     .select('id, name_en, name_uk, code')
     .order('name_en')
 
   const totalPages = Math.ceil((total ?? 0) / PAGE_SIZE)
+  const activeFilters = [sp.q, sp.country, sp.currency].filter(Boolean).length
 
   function pageHref(p: number) {
     const params = new URLSearchParams()
@@ -61,8 +55,6 @@ export default async function AdminCollectiblesPage({ searchParams }: { searchPa
     params.set('page', String(p))
     return `/admin/collectibles?${params.toString()}`
   }
-
-  const activeFilters = [sp.q, sp.country, sp.currency].filter(Boolean).length
 
   return (
     <div>
@@ -93,7 +85,7 @@ export default async function AdminCollectiblesPage({ searchParams }: { searchPa
           >
             <option value="">— всі країни —</option>
             {(countries ?? []).map(c => (
-              <option key={c.id} value={c.id}>
+              <option key={c.id} value={String(c.id)}>
                 {c.flag_emoji} {c.name_uk ?? c.name_en}
               </option>
             ))}
@@ -108,7 +100,7 @@ export default async function AdminCollectiblesPage({ searchParams }: { searchPa
           >
             <option value="">— всі валюти —</option>
             {(currencies ?? []).map(c => (
-              <option key={c.id} value={c.id}>
+              <option key={c.id} value={String(c.id)}>
                 {c.name_uk ?? c.name_en} {c.code ? `(${c.code})` : ''}
               </option>
             ))}
