@@ -9,9 +9,9 @@ interface CollectibleCardProps {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  banknote: 'Банкнота',
-  coin: 'Монета',
-  exonumia: 'Екзонумія',
+  BKNT: 'Банкнота',
+  COIN: 'Монета',
+  EXON: 'Екзонумія',
 }
 
 export function CollectibleCard({ collectible, inCollection }: CollectibleCardProps) {
@@ -50,10 +50,10 @@ export function CollectibleCard({ collectible, inCollection }: CollectibleCardPr
             </span>
           </div>
         )}
-        {collectible.category !== 'banknote' && (
+        {collectible.category_code !== 'BKNT' && (
           <div className="absolute bottom-2 left-2">
             <span className="badge bg-white/90 text-gray-600 text-xs">
-              {CATEGORY_LABELS[collectible.category] ?? collectible.category}
+              {CATEGORY_LABELS[collectible.category_code] ?? collectible.category_code}
             </span>
           </div>
         )}

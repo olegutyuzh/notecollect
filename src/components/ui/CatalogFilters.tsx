@@ -9,12 +9,6 @@ interface CatalogFiltersProps {
   issuers: string[]
 }
 
-const CATEGORIES = [
-  { value: 'banknote',  label: 'Банкноти' },
-  { value: 'coin',      label: 'Монети' },
-  { value: 'exonumia',  label: 'Екзонумія' },
-]
-
 export function CatalogFilters({ issuers }: CatalogFiltersProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -25,28 +19,26 @@ export function CatalogFilters({ issuers }: CatalogFiltersProps) {
 
   const [q, setQ]               = useState(searchParams.get('q') ?? '')
   const [issuer, setIssuer]     = useState(searchParams.get('issuer') ?? '')
-  const [category, setCategory] = useState(searchParams.get('category') ?? '')
   const [yearFrom, setYearFrom] = useState(searchParams.get('year_from') ?? '')
   const [yearTo, setYearTo]     = useState(searchParams.get('year_to') ?? '')
 
-  const activeCount = [issuer, category, yearFrom, yearTo].filter(Boolean).length
+  const activeCount = [issuer, yearFrom, yearTo].filter(Boolean).length
 
   function applyFilters() {
     const params = new URLSearchParams()
     if (q)        params.set('q', q)
     if (issuer)   params.set('issuer', issuer)
-    if (category) params.set('category', category)
     if (yearFrom) params.set('year_from', yearFrom)
     if (yearTo)   params.set('year_to', yearTo)
     router.push(`${pathname}?${params.toString()}`)
   }
 
   function clearAll() {
-    setQ(''); setIssuer(''); setCategory(''); setYearFrom(''); setYearTo('')
+    setQ(''); setIssuer(''); setYearFrom(''); setYearTo('')
     router.push(pathname)
   }
 
-  const hasAnyFilter = q || issuer || category || yearFrom || yearTo
+  const hasAnyFilter = q || issuer || yearFrom || yearTo
 
   return (
     <div className="mb-8 card overflow-hidden">
@@ -129,18 +121,7 @@ export function CatalogFilters({ issuers }: CatalogFiltersProps) {
 
       {/* Expanded filters */}
       {expanded && (
-        <div className="border-t border-gray-100 px-4 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Category */}
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Категорія</label>
-            <select value={category} onChange={e => setCategory(e.target.value)} className="input">
-              <option value="">Всі категорії</option>
-              {CATEGORIES.map(c => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
-          </div>
-
+        <div className="border-t border-gray-100 px-4 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Year range */}
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1.5">{t('filters.year')}</label>
@@ -163,7 +144,7 @@ export function CatalogFilters({ issuers }: CatalogFiltersProps) {
             </div>
           </div>
 
-          <div className="sm:col-span-2 lg:col-span-3 flex justify-end pt-2">
+          <div className="sm:col-span-2 flex justify-end pt-2">
             <button onClick={applyFilters} className="btn-primary px-8">
               {t('filters.apply')}
             </button>

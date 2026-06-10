@@ -16,6 +16,16 @@ const nextConfig = {
         hostname: 'en.numista.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: '*.numista.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'imagedelivery.net',
+        pathname: '/**',
+      },
     ],
   },
 }

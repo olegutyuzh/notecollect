@@ -1,7 +1,7 @@
 'use client'
 
 import { Link, usePathname, useRouter } from '@/i18n/navigation'
-import { BookOpen, Library, Star, Menu, X, LogOut, Plus, Globe } from 'lucide-react'
+import { BookOpen, Library, Star, Menu, X, LogOut, Globe, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
@@ -15,14 +15,30 @@ export function Header() {
   const t = useTranslations('Nav')
   const [menuOpen, setMenuOpen] = useState(false)
   const [user, setUser] = useState<SupabaseUser | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => setUser(data.user))
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+
+    async function syncUser(userId: string | undefined) {
+      if (!userId) { setIsAdmin(false); return }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setIsAdmin((profile as any)?.role === 'admin')
+    }
+
+    // onAuthStateChange fires immediately with INITIAL_SESSION,
+    // so no separate loadUser() call needed.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
       setUser(session?.user ?? null)
+      await syncUser(session?.user?.id)
     })
+
     return () => subscription.unsubscribe()
   }, [])
 
@@ -43,7 +59,11 @@ export function Header() {
     { href: '/collection/stats' as const, label: t('stats'), icon: Globe, exact: false },
   ]
 
-  const navLinks = [...publicLinks, ...(user ? privateLinks : [])]
+  const navLinks = [
+    ...publicLinks,
+    ...(user ? privateLinks : []),
+    ...(isAdmin ? [{ href: '/admin' as const, label: 'Admin', icon: ShieldCheck, exact: false }] : []),
+  ]
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
@@ -58,21 +78,29 @@ export function Header() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map(({ href, label, icon: Icon, exact }) => (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  'flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                  (exact ? pathname === href : pathname.startsWith(href))
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {label}
-              </Link>
-            ))}
+            {navLinks.map(({ href, label, icon: Icon, exact }) => {
+              const isAdminLink = href === '/admin'
+              const isActive = exact ? pathname === href : pathname.startsWith(href)
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    isAdminLink
+                      ? isActive
+                        ? 'bg-violet-50 text-violet-700'
+                        : 'text-violet-600 hover:bg-violet-50 hover:text-violet-800'
+                      : isActive
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </Link>
+              )
+            })}
           </nav>
 
           {/* Auth area */}
@@ -96,14 +124,6 @@ export function Header() {
                     <div className="fixed inset-0" onClick={() => setUserMenuOpen(false)} />
                     <div className="absolute right-0 mt-1 w-52 card py-1 shadow-lg z-50">
                       <Link
-                        href="/admin/banknotes/new"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <Plus className="h-4 w-4" />
-                        {t('addBanknote')}
-                      </Link>
-                      <Link
                         href="/collection"
                         className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setUserMenuOpen(false)}
@@ -119,6 +139,19 @@ export function Header() {
                         <Globe className="h-4 w-4" />
                         {t('stats')}
                       </Link>
+                      {isAdmin && (
+                        <>
+                          <div className="border-t border-gray-100 my-1" />
+                          <Link
+                            href="/admin"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-violet-700 hover:bg-violet-50"
+                            onClick={() => setUserMenuOpen(false)}
+                          >
+                            <ShieldCheck className="h-4 w-4" />
+                            Адмін-панель
+                          </Link>
+                        </>
+                      )}
                       <div className="border-t border-gray-100 my-1" />
                       <button
                         onClick={handleLogout}
@@ -173,14 +206,16 @@ export function Header() {
             </div>
             {user ? (
               <>
-                <Link
-                  href="/admin/banknotes/new"
-                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <Plus className="h-4 w-4" />
-                  {t('addBanknote')}
-                </Link>
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-violet-700 hover:bg-violet-50"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <ShieldCheck className="h-4 w-4" />
+                    Адмін-панель
+                  </Link>
+                )}
                 <button
                   onClick={() => { handleLogout(); setMenuOpen(false) }}
                   className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 w-full"

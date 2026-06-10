@@ -39,7 +39,7 @@ export default function RegisterPage() {
           </div>
           <h2 className="text-xl font-bold text-gray-900 mb-2">{t('checkEmail')}</h2>
           <p className="text-gray-500 text-sm">
-            {t('checkEmailDesc', { email: <strong key="e">{email}</strong> as any })}
+            {t('checkEmailDesc', { email })}
           </p>
         </div>
       </div>

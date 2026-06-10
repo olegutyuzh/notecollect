@@ -35,7 +35,7 @@ export interface Database {
         Row: {
           id: number
           title: string
-          category: string                 // 'banknote' | 'coin' | 'exonumia'
+          category_code: string            // 'BKNT' | 'COIN' | 'EXON' — FK → categories.code
           object_type_id: number | null
           object_type_name: string | null
           issuer_code: string | null

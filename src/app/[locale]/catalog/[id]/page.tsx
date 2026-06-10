@@ -2,16 +2,17 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import Image from 'next/image'
 import { Link } from '@/i18n/navigation'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, Tag } from 'lucide-react'
+import { Tag } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import type { CollectibleWithRelations, CollectibleVariation, CollectibleDetails } from '@/types/database'
 import { AddToCollectionButton } from '@/components/ui/AddToCollectionButton'
 import { VariationsTable } from '@/components/ui/VariationsTable'
+import { BackButton } from '@/components/ui/BackButton'
 
 const CATEGORY_LABELS: Record<string, string> = {
-  banknote: 'Банкнота',
-  coin: 'Монета',
-  exonumia: 'Екзонумія',
+  BKNT: 'Банкнота',
+  COIN: 'Монета',
+  EXON: 'Екзонумія',
 }
 
 // Typed helpers for raw_data JSONB
@@ -62,7 +63,7 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
     supabase.from('collectibles').select('*, countries(*)').eq('id', id).single(),
     supabase.from('collectible_variations').select('*').eq('collectible_id', id).order('gregorian_year', { ascending: true }),
     user
-      ? supabase.from('collected_items').select('id, collectible_variation_id, grade, quantity').eq('collectible_id', id).eq('user_id', user.id)
+      ? supabase.from('collected_items').select('id, user_id, collectible_id, collectible_variation_id, grade, quantity, for_swap, price_value, price_currency, serial_number, private_comment, public_comment, grading_company, grading_company_id, slab_grade, slab_number, grading_designations, pictures, created_at').eq('collectible_id', id).eq('user_id', user.id)
       : Promise.resolve({ data: [] }),
     supabase.from('collectible_details').select('*').eq('collectible_id', id).maybeSingle(),
   ])
@@ -97,7 +98,7 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
   const ruler = raw.ruler?.[0]?.name ?? null
 
   const mainDetails = [
-    { label: 'Категорія',   value: CATEGORY_LABELS[c.category] ?? c.category },
+    { label: 'Категорія',   value: CATEGORY_LABELS[c.category_code] ?? c.category_code },
     { label: 'Тип',         value: c.object_type_name ?? null },
     { label: 'Валюта',      value: currency },
     { label: 'Серія',       value: typeof d?.series === 'string' ? d.series : null },
@@ -118,10 +119,7 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
 
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8">
-      <Link href="/catalog" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 mb-6">
-        <ArrowLeft className="h-4 w-4" />
-        {t('backToCatalog')}
-      </Link>
+      <BackButton label={t('backToCatalog')} fallback="/catalog" />
 
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Images */}
@@ -213,17 +211,19 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
             </div>
           )}
 
-          {/* Variations */}
-          {vars.length > 0 && (
-            <VariationsTable
-              collectible={c}
-              variations={vars}
-              userItems={(userItems ?? []) as { id: number; collectible_variation_id: number | null; grade: string | null; quantity: number }[]}
-              isLoggedIn={!!user}
-            />
-          )}
         </div>
       </div>
+
+      {/* Variations table — full width below the grid */}
+      {vars.length > 0 && (
+        <VariationsTable
+          collectible={c}
+          variations={vars}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          userItems={(userItems ?? []) as any}
+          isLoggedIn={!!user}
+        />
+      )}
 
       {/* Full-width sections below */}
       {(d?.obverse_description || d?.reverse_description || raw.obverse?.lettering || raw.reverse?.lettering || comments) && (
