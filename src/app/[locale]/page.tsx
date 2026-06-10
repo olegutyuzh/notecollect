@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { Library, Star, Users, Search } from 'lucide-react'
 import { createAdminSupabaseClient } from '@/lib/supabase-admin'
+import Image from 'next/image'
 
 interface HomepageStats {
   notes_count: number
@@ -32,18 +33,33 @@ export default async function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-blue-700 to-blue-900 text-white py-20 px-4">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-4">{t('hero.title')}</h1>
-          <p className="text-blue-100 text-lg mb-8">{t('hero.subtitle')}</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/catalog" className="inline-flex items-center justify-center gap-2 rounded-lg bg-white text-blue-700 px-6 py-3 font-semibold hover:bg-blue-50 transition-colors">
-              <Library className="h-5 w-5" />
-              {t('hero.browse')}
-            </Link>
-            <Link href="/auth/register" className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-white/40 text-white px-6 py-3 font-semibold hover:bg-white/10 transition-colors">
-              {t('hero.registerFree')}
-            </Link>
+      <section className="bg-gradient-to-br from-blue-700 to-blue-900 text-white py-16 px-4 overflow-hidden">
+        <div className="mx-auto max-w-6xl flex flex-col lg:flex-row items-center gap-10">
+          {/* Text */}
+          <div className="flex-1 text-center lg:text-left">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4">{t('hero.title')}</h1>
+            <p className="text-blue-100 text-lg mb-8">{t('hero.subtitle')}</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+              <Link href="/catalog" className="inline-flex items-center justify-center gap-2 rounded-lg bg-white text-blue-700 px-6 py-3 font-semibold hover:bg-blue-50 transition-colors">
+                <Library className="h-5 w-5" />
+                {t('hero.browse')}
+              </Link>
+              <Link href="/auth/register" className="inline-flex items-center justify-center gap-2 rounded-lg border-2 border-white/40 text-white px-6 py-3 font-semibold hover:bg-white/10 transition-colors">
+                {t('hero.registerFree')}
+              </Link>
+            </div>
+          </div>
+
+          {/* Hero image */}
+          <div className="flex-shrink-0 w-72 sm:w-80 lg:w-96 select-none">
+            <Image
+              src="/hero.png"
+              alt="CollectorHub — колекціонування банкнот, монет та марок"
+              width={600}
+              height={480}
+              priority
+              className="w-full h-auto drop-shadow-2xl"
+            />
           </div>
         </div>
       </section>

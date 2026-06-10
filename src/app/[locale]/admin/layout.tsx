@@ -16,7 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* Sidebar */}
       <aside className="w-52 shrink-0 bg-white border-r border-gray-200 flex flex-col">
         <div className="px-4 py-5 border-b border-gray-100">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">NoteCollect</p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">CollectorHub</p>
           <p className="text-sm font-bold text-gray-900">Адмін-панель</p>
         </div>
 

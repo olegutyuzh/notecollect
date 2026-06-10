@@ -72,7 +72,7 @@ export async function uploadCollectiblePhoto(formData: FormData): Promise<{ url:
       `text-anchor="end" font-family="Arial,sans-serif" font-size="${fontSize}" ` +
       `font-weight="bold" fill="white" fill-opacity="0.65" ` +
       `stroke="black" stroke-width="0.5" stroke-opacity="0.3">` +
-      `notecollect.com</text></svg>`
+      `collectorhub.com</text></svg>`
     )
 
     processedBuffer = await sharp(inputBuffer)

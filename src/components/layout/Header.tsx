@@ -78,7 +78,7 @@ export function Header({ initialIsAdmin = false }: HeaderProps) {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 font-bold text-blue-700 text-lg">
             <BookOpen className="h-6 w-6" />
-            NoteCollect
+            CollectorHub
           </Link>
 
           {/* Desktop nav */}

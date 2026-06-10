@@ -129,7 +129,7 @@ function PhotoUpload({
         </div>
       )}
       {uploadError && <p className="text-xs text-red-600">{uploadError}</p>}
-      <p className="text-[10px] text-gray-400">+ watermark «notecollect.com»</p>
+      <p className="text-[10px] text-gray-400">+ watermark «collectorhub.com»</p>
 
       <input
         ref={inputRef}
