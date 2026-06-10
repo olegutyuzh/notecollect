@@ -7,18 +7,17 @@ import { Link } from '@/i18n/navigation'
 import { useTranslations } from 'next-intl'
 import type { AllStats, GradeStat, YearStat } from './types'
 
-// Lazy-load the heavy D3 map — it won't block the initial page render
 const WorldMap = dynamic(() => import('./WorldMap'), {
   ssr: false,
   loading: () => (
-    <div className="w-full bg-slate-100 rounded-lg animate-pulse" style={{ paddingBottom: '50%' }} />
+    <div className="w-full bg-white/5 rounded-lg animate-pulse" style={{ paddingBottom: '50%' }} />
   ),
 })
 
 function getColor(count: number): string {
-  if (count === 0)  return '#e5e7eb'
-  if (count <= 2)   return '#bfdbfe'
-  if (count <= 5)   return '#60a5fa'
+  if (count === 0)  return '#1e3a5f'
+  if (count <= 2)   return '#1d4ed8'
+  if (count <= 5)   return '#3b82f6'
   if (count <= 15)  return '#f59e0b'
   if (count <= 30)  return '#f97316'
   return '#dc2626'
@@ -33,7 +32,7 @@ function DonutChart({ data, noDataLabel, totalLabel, onSegmentClick }: {
 }) {
   const [hovered, setHovered] = useState<string | null>(null)
   const total = data.reduce((s, d) => s + d.count, 0)
-  if (total === 0) return <p className="text-sm text-gray-400">{noDataLabel}</p>
+  if (total === 0) return <p className="text-sm text-slate-500">{noDataLabel}</p>
 
   const cx = 70, cy = 70, R = 55, ri = 32
   let angle = -Math.PI / 2
@@ -59,31 +58,31 @@ function DonutChart({ data, noDataLabel, totalLabel, onSegmentClick }: {
             key={a.grade}
             d={a.path}
             fill={a.color}
-            stroke="white"
+            stroke="#07111f"
             strokeWidth="1.5"
-            opacity={hovered && hovered !== a.grade ? 0.55 : 1}
+            opacity={hovered && hovered !== a.grade ? 0.45 : 1}
             style={{ cursor: onSegmentClick ? 'pointer' : 'default', transition: 'opacity 0.15s' }}
             onMouseEnter={() => setHovered(a.grade)}
             onMouseLeave={() => setHovered(null)}
             onClick={() => onSegmentClick?.(a.grade)}
           />
         ))}
-        <text x={cx} y={cy - 7} textAnchor="middle" fontSize="10" fill="#9ca3af">{totalLabel}</text>
-        <text x={cx} y={cx + 10} textAnchor="middle" fontSize="20" fontWeight="bold" fill="#111827">{total}</text>
+        <text x={cx} y={cy - 7} textAnchor="middle" fontSize="10" fill="#94a3b8">{totalLabel}</text>
+        <text x={cx} y={cx + 10} textAnchor="middle" fontSize="20" fontWeight="bold" fill="#f1f5f9">{total}</text>
       </svg>
       <div className="space-y-1.5">
         {arcs.map(a => (
           <div
             key={a.grade}
-            className={`flex items-center gap-2 text-sm rounded px-1 -mx-1 transition-colors ${onSegmentClick ? 'cursor-pointer hover:bg-gray-100' : ''} ${hovered === a.grade ? 'bg-gray-100' : ''}`}
+            className={`flex items-center gap-2 text-sm rounded px-1 -mx-1 transition-colors ${onSegmentClick ? 'cursor-pointer hover:bg-white/10' : ''} ${hovered === a.grade ? 'bg-white/10' : ''}`}
             onMouseEnter={() => setHovered(a.grade)}
             onMouseLeave={() => setHovered(null)}
             onClick={() => onSegmentClick?.(a.grade)}
           >
             <span className="w-3 h-3 rounded-sm flex-shrink-0" style={{ background: a.color }} />
-            <span className="font-medium text-gray-700 truncate max-w-[120px]" title={a.grade}>{a.grade}</span>
-            <span className="text-gray-500 ml-auto pl-2">{a.count}</span>
-            <span className="text-gray-400 text-xs">({Math.round(a.count / total * 100)}%)</span>
+            <span className="font-medium text-slate-200 truncate max-w-[120px]" title={a.grade}>{a.grade}</span>
+            <span className="text-slate-400 ml-auto pl-2">{a.count}</span>
+            <span className="text-slate-500 text-xs">({Math.round(a.count / total * 100)}%)</span>
           </div>
         ))}
       </div>
@@ -94,7 +93,7 @@ function DonutChart({ data, noDataLabel, totalLabel, onSegmentClick }: {
 // ── Year bar chart ─────────────────────────────────────────────────────────────
 function YearChart({ data }: { data: YearStat[] }) {
   const [hovered, setHovered] = useState<YearStat | null>(null)
-  if (data.length === 0) return <p className="text-sm text-gray-400">Немає даних</p>
+  if (data.length === 0) return <p className="text-sm text-slate-500">Немає даних</p>
 
   const maxCount = Math.max(...data.map(d => d.count))
   const BAR_W    = Math.max(8, Math.min(28, Math.floor(600 / data.length) - 3))
@@ -113,11 +112,11 @@ function YearChart({ data }: { data: YearStat[] }) {
             return (
               <g key={d.year} onMouseEnter={() => setHovered(d)} onMouseLeave={() => setHovered(null)}>
                 <rect x={x} y={y} width={BAR_W} height={barH} rx={3}
-                  fill={isHov ? '#2563eb' : '#93c5fd'}
+                  fill={isHov ? '#c9a96e' : '#1d4ed8'}
                   className="transition-colors duration-100"
                 />
                 {(d.year % 5 === 0 || i === 0 || i === data.length - 1) && (
-                  <text x={x + BAR_W / 2} y={H + 16} textAnchor="middle" fontSize="10" fill="#9ca3af">
+                  <text x={x + BAR_W / 2} y={H + 16} textAnchor="middle" fontSize="10" fill="#64748b">
                     {d.year}
                   </text>
                 )}
@@ -126,7 +125,7 @@ function YearChart({ data }: { data: YearStat[] }) {
           })}
         </svg>
         {hovered && (
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs rounded-md px-2.5 py-1.5 pointer-events-none whitespace-nowrap shadow-xl z-10">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-[#0d1f33] border border-white/10 text-white text-xs rounded-md px-2.5 py-1.5 pointer-events-none whitespace-nowrap shadow-xl z-10">
             {hovered.year} — {hovered.count} шт.
           </div>
         )}
@@ -166,27 +165,27 @@ export function StatsCharts({ stats }: { stats: AllStats }) {
           { label: t('forSwap'),   value: summary.forSwap   },
         ].map(({ label, value }) => (
           <div key={label} className="card text-center py-5">
-            <p className="text-3xl font-bold text-gray-900">{value}</p>
-            <p className="text-sm text-gray-500 mt-1">{label}</p>
+            <p className="text-3xl font-bold text-[#c9a96e]">{value}</p>
+            <p className="text-sm text-slate-400 mt-1">{label}</p>
           </div>
         ))}
       </div>
 
-      {/* World map — lazy loaded, won't block page */}
+      {/* World map */}
       <div className="card p-4 mb-6">
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">{t('mapTitle')}</h2>
+        <h2 className="text-sm font-semibold text-slate-300 mb-3">{t('mapTitle')}</h2>
         <WorldMap countryStats={countryStats} onCountryClick={handleCountryClick} />
         <div className="flex items-center gap-4 mt-3 flex-wrap">
           {[
-            { color: '#e5e7eb', label: '0' },
-            { color: '#bfdbfe', label: '1-2' },
-            { color: '#60a5fa', label: '3-5' },
+            { color: '#1e3a5f', label: '0' },
+            { color: '#1d4ed8', label: '1-2' },
+            { color: '#3b82f6', label: '3-5' },
             { color: '#f59e0b', label: '6-15' },
             { color: '#f97316', label: '16-30' },
             { color: '#dc2626', label: '31+' },
           ].map(({ color, label }) => (
-            <div key={label} className="flex items-center gap-1.5 text-xs text-gray-500">
-              <span className="w-4 h-3 rounded-sm inline-block border border-gray-200" style={{ background: color }} />
+            <div key={label} className="flex items-center gap-1.5 text-xs text-slate-500">
+              <span className="w-4 h-3 rounded-sm inline-block border border-white/10" style={{ background: color }} />
               {label}
             </div>
           ))}
@@ -197,8 +196,8 @@ export function StatsCharts({ stats }: { stats: AllStats }) {
       {yearStats.length > 0 && (
         <div className="card p-5 mb-6">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-700">По роках випуску</h2>
-            <span className="text-xs text-gray-400">
+            <h2 className="text-sm font-semibold text-slate-300">По роках випуску</h2>
+            <span className="text-xs text-slate-500">
               {yearStats[0]?.year} – {yearStats[yearStats.length - 1]?.year}
               {' · '}{yearStats.filter(y => y.count > 0).length} різних років
             </span>
@@ -210,34 +209,34 @@ export function StatsCharts({ stats }: { stats: AllStats }) {
       <div className="grid md:grid-cols-2 gap-6">
         {/* Grade donut */}
         <div className="card p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">{t('gradesTitle')}</h2>
+          <h2 className="text-sm font-semibold text-slate-300 mb-4">{t('gradesTitle')}</h2>
           <DonutChart data={gradeStats} noDataLabel={t('noData')} totalLabel={t('total')} />
         </div>
 
         {/* Top issuers */}
         <div className="card p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">Топ емітентів</h2>
+          <h2 className="text-sm font-semibold text-slate-300 mb-4">Топ емітентів</h2>
           {issuerStats.length === 0 ? (
-            <p className="text-sm text-gray-400">{t('noData')}</p>
+            <p className="text-sm text-slate-500">{t('noData')}</p>
           ) : (
             <div className="space-y-2">
               {issuerStats.slice(0, 12).map((iss, i) => (
                 <div key={iss.name} className="flex items-center gap-2">
-                  <span className="text-xs text-gray-400 w-5 text-right">{i + 1}</span>
-                  <span className="text-sm text-gray-700 flex-1 truncate">{iss.name}</span>
+                  <span className="text-xs text-slate-500 w-5 text-right">{i + 1}</span>
+                  <span className="text-sm text-slate-200 flex-1 truncate">{iss.name}</span>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <div className="w-20 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                    <div className="w-20 bg-white/10 rounded-full h-1.5 overflow-hidden">
                       <div
-                        className="h-1.5 rounded-full bg-blue-400 transition-all"
+                        className="h-1.5 rounded-full bg-[#c9a96e] transition-all"
                         style={{ width: `${Math.round((iss.count / maxIssuerCount) * 100)}%` }}
                       />
                     </div>
-                    <span className="text-sm font-semibold text-gray-900 w-8 text-right">{iss.count}</span>
+                    <span className="text-sm font-semibold text-white w-8 text-right">{iss.count}</span>
                   </div>
                 </div>
               ))}
               {issuerStats.length > 12 && (
-                <p className="text-xs text-gray-400 pt-1">+{issuerStats.length - 12}</p>
+                <p className="text-xs text-slate-500 pt-1">+{issuerStats.length - 12}</p>
               )}
             </div>
           )}
@@ -246,8 +245,8 @@ export function StatsCharts({ stats }: { stats: AllStats }) {
         {/* Grading companies */}
         {gradingCompanyStats.length > 0 && (
           <div className="card p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-1">Грейдингові компанії</h2>
-            <p className="text-xs text-gray-400 mb-4">
+            <h2 className="text-sm font-semibold text-slate-300 mb-1">Грейдингові компанії</h2>
+            <p className="text-xs text-slate-500 mb-4">
               {gradingCompanyStats.reduce((s, g) => s + g.count, 0)} слябованих банкнот · натисніть для фільтру
             </p>
             <DonutChart
@@ -262,8 +261,8 @@ export function StatsCharts({ stats }: { stats: AllStats }) {
         {/* Slab grade bars */}
         {slabGradeStats.length > 0 && (
           <div className="card p-5">
-            <h2 className="text-sm font-semibold text-gray-700 mb-1">Розподіл по якості (сляби)</h2>
-            <p className="text-xs text-gray-400 mb-4">
+            <h2 className="text-sm font-semibold text-slate-300 mb-1">Розподіл по якості (сляби)</h2>
+            <p className="text-xs text-slate-500 mb-4">
               {slabGradeStats.length} різних грейдів · {slabGradeStats.reduce((s, g) => s + g.count, 0)} шт. · натисніть для фільтру
             </p>
             <div className="space-y-2">
@@ -275,21 +274,21 @@ export function StatsCharts({ stats }: { stats: AllStats }) {
                   <button
                     key={g.grade}
                     onClick={() => router.push(`/collection?slab_grade=${encodeURIComponent(g.grade)}`)}
-                    className="w-full flex items-center gap-2 rounded-lg px-2 py-1 -mx-2 hover:bg-gray-50 transition-colors cursor-pointer text-left"
+                    className="w-full flex items-center gap-2 rounded-lg px-2 py-1 -mx-2 hover:bg-white/8 transition-colors cursor-pointer text-left"
                   >
                     <span
                       className="text-xs font-mono font-semibold w-14 text-right px-1.5 py-0.5 rounded flex-shrink-0"
-                      style={{ color, background: color + '18' }}
+                      style={{ color, background: color + '25' }}
                     >
                       {g.grade}
                     </span>
-                    <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                    <div className="flex-1 bg-white/10 rounded-full h-2 overflow-hidden">
                       <div
                         className="h-2 rounded-full transition-all"
                         style={{ width: `${Math.round((g.count / maxSG) * 100)}%`, background: color }}
                       />
                     </div>
-                    <span className="text-sm font-semibold text-gray-900 w-6 text-right">{g.count}</span>
+                    <span className="text-sm font-semibold text-white w-6 text-right">{g.count}</span>
                   </button>
                 )
               })}
@@ -299,33 +298,33 @@ export function StatsCharts({ stats }: { stats: AllStats }) {
 
         {/* Top countries */}
         <div className="card p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">{t('topCountriesTitle')}</h2>
+          <h2 className="text-sm font-semibold text-slate-300 mb-4">{t('topCountriesTitle')}</h2>
           {countryStats.length === 0 ? (
-            <p className="text-sm text-gray-400">{t('noData')}</p>
+            <p className="text-sm text-slate-500">{t('noData')}</p>
           ) : (
             <div className="space-y-2">
               {countryStats.slice(0, 12).map((c, i) => (
                 <Link
                   key={c.code}
                   href={`/collection?country=${c.code}`}
-                  className="flex items-center gap-2 group hover:bg-blue-50 rounded-lg px-1 -mx-1 transition-colors"
+                  className="flex items-center gap-2 group hover:bg-white/8 rounded-lg px-1 -mx-1 transition-colors"
                 >
-                  <span className="text-xs text-gray-400 w-5 text-right">{i + 1}</span>
+                  <span className="text-xs text-slate-500 w-5 text-right">{i + 1}</span>
                   <span className="text-base w-6 text-center leading-none">{c.flag}</span>
-                  <span className="text-sm text-gray-700 flex-1 truncate group-hover:text-blue-700">{c.name}</span>
+                  <span className="text-sm text-slate-200 flex-1 truncate group-hover:text-[#c9a96e]">{c.name}</span>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    <div className="w-20 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                    <div className="w-20 bg-white/10 rounded-full h-1.5 overflow-hidden">
                       <div
                         className="h-1.5 rounded-full transition-all"
                         style={{ width: `${Math.round((c.count / maxCount) * 100)}%`, background: getColor(c.count) }}
                       />
                     </div>
-                    <span className="text-sm font-semibold text-gray-900 w-8 text-right">{c.count}</span>
+                    <span className="text-sm font-semibold text-white w-8 text-right">{c.count}</span>
                   </div>
                 </Link>
               ))}
               {countryStats.length > 12 && (
-                <p className="text-xs text-gray-400 pt-1">+{countryStats.length - 12}</p>
+                <p className="text-xs text-slate-500 pt-1">+{countryStats.length - 12}</p>
               )}
             </div>
           )}

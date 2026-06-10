@@ -1,6 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import Image from 'next/image'
-import { Link } from '@/i18n/navigation'
 import { notFound } from 'next/navigation'
 import { Tag } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
@@ -15,7 +14,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   EXON: 'Екзонумія',
 }
 
-// Typed helpers for raw_data JSONB
 interface RawData {
   shape?: string
   size2?: number
@@ -82,7 +80,6 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
     ? `${c.min_year}–${c.max_year}`
     : c.min_year?.toString() ?? '—'
 
-  // Use full-res images from raw_data if available, else fallback to thumbnail→600
   const obversePicture = raw.obverse?.picture
     ?? (c.obverse_thumbnail ? c.obverse_thumbnail.replace('-180.jpg', '-600.jpg').replace('-180.png', '-600.png') : null)
   const reversePicture = raw.reverse?.picture
@@ -103,7 +100,7 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
     { label: 'Валюта',      value: currency },
     { label: 'Серія',       value: typeof d?.series === 'string' ? d.series : null },
     { label: 'Емітент',     value: c.issuer_name ?? null },
-    { label: 'Орган емісії',value: issuingEntity },
+    { label: 'Орган емісії', value: issuingEntity },
     { label: 'Правитель',   value: ruler },
     { label: 'Роки',        value: years },
     { label: 'Країна',      value: country ? `${country.flag_emoji ?? ''} ${country.name_uk ?? country.name_en}`.trim() : null },
@@ -126,7 +123,7 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
         <div className="space-y-3">
           {obversePicture ? (
             <div className="card overflow-hidden">
-              <div className="bg-gray-50 px-3 py-1.5 border-b border-gray-100 text-xs text-gray-500">{t('detail.obverse')}</div>
+              <div className="px-3 py-1.5 border-b border-white/10 text-xs text-slate-500">{t('detail.obverse')}</div>
               <div className="relative aspect-[2/1]">
                 <Image src={obversePicture} alt={t('detail.obverse')} fill className="object-contain p-2" />
               </div>
@@ -134,22 +131,22 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
           ) : null}
           {reversePicture ? (
             <div className="card overflow-hidden">
-              <div className="bg-gray-50 px-3 py-1.5 border-b border-gray-100 text-xs text-gray-500">{t('detail.reverse')}</div>
+              <div className="px-3 py-1.5 border-b border-white/10 text-xs text-slate-500">{t('detail.reverse')}</div>
               <div className="relative aspect-[2/1]">
                 <Image src={reversePicture} alt={t('detail.reverse')} fill className="object-contain p-2" />
               </div>
             </div>
           ) : null}
           {!obversePicture && !reversePicture && (
-            <div className="card flex items-center justify-center aspect-[2/1] text-gray-300">
-              <p className="text-sm">{t('detail.noPhoto')}</p>
+            <div className="card flex items-center justify-center aspect-[2/1]">
+              <p className="text-sm text-slate-500">{t('detail.noPhoto')}</p>
             </div>
           )}
 
           {/* Watermark image */}
           {raw.watermark?.thumbnail && (
             <div className="card overflow-hidden">
-              <div className="bg-gray-50 px-3 py-1.5 border-b border-gray-100 text-xs text-gray-500">{t('detail.watermark')}</div>
+              <div className="px-3 py-1.5 border-b border-white/10 text-xs text-slate-500">{t('detail.watermark')}</div>
               <div className="relative aspect-[2/1]">
                 <Image
                   src={raw.watermark.picture ?? raw.watermark.thumbnail}
@@ -159,7 +156,7 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
                 />
               </div>
               {raw.watermark.description && (
-                <p className="px-3 py-2 text-xs text-gray-500">{raw.watermark.description}</p>
+                <p className="px-3 py-2 text-xs text-slate-500">{raw.watermark.description}</p>
               )}
             </div>
           )}
@@ -167,8 +164,8 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
 
         {/* Info */}
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">{c.title}</h1>
-          <p className="text-gray-500 mb-4">
+          <h1 className="text-2xl font-bold text-white mb-1">{c.title}</h1>
+          <p className="text-slate-400 mb-4">
             {country?.flag_emoji} {c.issuer_name}
             {c.min_year && ` · ${years}`}
           </p>
@@ -177,7 +174,7 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-4">
               {tags.map(tag => (
-                <span key={tag} className="inline-flex items-center gap-1 text-xs bg-gray-100 text-gray-600 rounded-full px-2.5 py-1">
+                <span key={tag} className="inline-flex items-center gap-1 text-xs bg-white/10 text-slate-300 rounded-full px-2.5 py-1">
                   <Tag className="h-2.5 w-2.5" />
                   {tag}
                 </span>
@@ -188,11 +185,11 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
           <AddToCollectionButton collectible={c} />
 
           {/* Main details table */}
-          <div className="card divide-y divide-gray-100 mt-5">
+          <div className="card divide-y divide-white/10 mt-5">
             {mainDetails.map(({ label, value }) => (
               <div key={label} className="flex justify-between px-4 py-2.5 text-sm">
-                <span className="text-gray-500 shrink-0 mr-3">{label}</span>
-                <span className="text-gray-900 font-medium text-right">{value}</span>
+                <span className="text-slate-500 shrink-0 mr-3">{label}</span>
+                <span className="text-slate-100 font-medium text-right">{value}</span>
               </div>
             ))}
           </div>
@@ -200,21 +197,20 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
           {/* Catalog references */}
           {refs.length > 0 && (
             <div className="card px-4 py-3 mt-3">
-              <p className="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide">Каталожні номери</p>
+              <p className="text-xs text-slate-500 mb-2 font-medium uppercase tracking-wide">Каталожні номери</p>
               <div className="flex flex-wrap gap-2">
                 {refs.map((r, i) => (
-                  <span key={i} className="inline-block bg-blue-50 text-blue-800 text-sm font-mono rounded px-2 py-0.5">
+                  <span key={i} className="inline-block bg-[#c9a96e]/10 text-[#c9a96e] text-sm font-mono rounded px-2 py-0.5 border border-[#c9a96e]/20">
                     {r.code}-{r.number}
                   </span>
                 ))}
               </div>
             </div>
           )}
-
         </div>
       </div>
 
-      {/* Variations table — full width below the grid */}
+      {/* Variations table */}
       {vars.length > 0 && (
         <VariationsTable
           collectible={c}
@@ -225,49 +221,45 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
         />
       )}
 
-      {/* Full-width sections below */}
+      {/* Descriptions */}
       {(d?.obverse_description || d?.reverse_description || raw.obverse?.lettering || raw.reverse?.lettering || comments) && (
         <div className="mt-8 space-y-4">
-
-          {/* Obverse description */}
           {d?.obverse_description && (
             <div className="card p-5">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('detail.obverseDesc')}</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">{d.obverse_description}</p>
+              <h3 className="text-sm font-semibold text-slate-300 mb-2">{t('detail.obverseDesc')}</h3>
+              <p className="text-sm text-slate-400 leading-relaxed">{d.obverse_description}</p>
               {raw.obverse?.lettering && (
-                <div className="mt-3 border-t border-gray-100 pt-3">
-                  <p className="text-xs text-gray-400 mb-1">Напис на банкноті</p>
-                  <pre className="text-xs text-gray-600 whitespace-pre-wrap font-mono bg-gray-50 rounded p-2">{raw.obverse.lettering}</pre>
+                <div className="mt-3 border-t border-white/10 pt-3">
+                  <p className="text-xs text-slate-500 mb-1">Напис на банкноті</p>
+                  <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono bg-white/[0.06] rounded p-2">{raw.obverse.lettering}</pre>
                   {raw.obverse.lettering_translation && (
-                    <p className="text-xs text-gray-500 italic mt-1">{raw.obverse.lettering_translation}</p>
+                    <p className="text-xs text-slate-500 italic mt-1">{raw.obverse.lettering_translation}</p>
                   )}
                 </div>
               )}
             </div>
           )}
 
-          {/* Reverse description */}
           {d?.reverse_description && (
             <div className="card p-5">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('detail.reverseDesc')}</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">{d.reverse_description}</p>
+              <h3 className="text-sm font-semibold text-slate-300 mb-2">{t('detail.reverseDesc')}</h3>
+              <p className="text-sm text-slate-400 leading-relaxed">{d.reverse_description}</p>
               {raw.reverse?.lettering && (
-                <div className="mt-3 border-t border-gray-100 pt-3">
-                  <p className="text-xs text-gray-400 mb-1">Напис на банкноті</p>
-                  <pre className="text-xs text-gray-600 whitespace-pre-wrap font-mono bg-gray-50 rounded p-2">{raw.reverse.lettering}</pre>
+                <div className="mt-3 border-t border-white/10 pt-3">
+                  <p className="text-xs text-slate-500 mb-1">Напис на банкноті</p>
+                  <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono bg-white/[0.06] rounded p-2">{raw.reverse.lettering}</pre>
                   {raw.reverse.lettering_translation && (
-                    <p className="text-xs text-gray-500 italic mt-1">{raw.reverse.lettering_translation}</p>
+                    <p className="text-xs text-slate-500 italic mt-1">{raw.reverse.lettering_translation}</p>
                   )}
                 </div>
               )}
             </div>
           )}
 
-          {/* Comments */}
           {comments && (
             <div className="card p-5">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Коментарі</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">{comments}</p>
+              <h3 className="text-sm font-semibold text-slate-300 mb-2">Коментарі</h3>
+              <p className="text-sm text-slate-400 leading-relaxed">{comments}</p>
             </div>
           )}
         </div>

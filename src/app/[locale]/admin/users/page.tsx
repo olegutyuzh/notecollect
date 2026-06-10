@@ -8,11 +8,9 @@ export default async function AdminUsersPage() {
 
   const { data: { user: me } } = await supabase.auth.getUser()
 
-  // Fetch all users via admin API
   const { data: authData } = await adminClient.auth.admin.listUsers()
   const authUsers = authData?.users ?? []
 
-  // Fetch all profiles for roles
   const { data: profiles } = await adminClient
     .from('profiles')
     .select('id, role, created_at')
@@ -29,30 +27,30 @@ export default async function AdminUsersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Користувачі</h1>
-      <p className="text-gray-500 text-sm mb-6">{users.length} зареєстрованих</p>
+      <h1 className="text-2xl font-bold text-white mb-1">Користувачі</h1>
+      <p className="text-slate-400 text-sm mb-6">{users.length} зареєстрованих</p>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="card overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Email</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Зареєстровано</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Останній вхід</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Роль</th>
+            <tr className="border-b border-white/10 bg-white/[0.04]">
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">Email</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">Зареєстровано</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">Останній вхід</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">Роль</th>
             </tr>
           </thead>
           <tbody>
             {users.map(u => (
-              <tr key={u.id} className="border-t border-gray-100 hover:bg-gray-50/50">
-                <td className="px-4 py-3 font-medium text-gray-900">
+              <tr key={u.id} className="border-t border-white/8 hover:bg-white/[0.03]">
+                <td className="px-4 py-3 font-medium text-slate-100">
                   {u.email}
-                  {u.id === me?.id && <span className="ml-2 text-xs text-gray-400">(ви)</span>}
+                  {u.id === me?.id && <span className="ml-2 text-xs text-slate-500">(ви)</span>}
                 </td>
-                <td className="px-4 py-3 text-gray-500">
+                <td className="px-4 py-3 text-slate-400">
                   {new Date(u.createdAt).toLocaleDateString('uk')}
                 </td>
-                <td className="px-4 py-3 text-gray-500">
+                <td className="px-4 py-3 text-slate-400">
                   {u.lastSignIn ? new Date(u.lastSignIn).toLocaleDateString('uk') : '—'}
                 </td>
                 <td className="px-4 py-3">

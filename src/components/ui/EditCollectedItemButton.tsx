@@ -7,7 +7,6 @@ import type { CollectedItem } from '@/types/database'
 
 interface Props {
   item: CollectedItem
-  /** Show full label "Редагувати". Defaults to icon-only. */
   showLabel?: boolean
 }
 
@@ -21,8 +20,8 @@ export function EditCollectedItemButton({ item, showLabel = false }: Props) {
         title="Редагувати"
         className={
           showLabel
-            ? 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors'
-            : 'w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors'
+            ? 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:border-white/20 transition-colors'
+            : 'w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-slate-500 hover:border-[#c9a96e]/40 hover:text-[#c9a96e] hover:bg-[#c9a96e]/8 transition-colors'
         }
       >
         <Pencil className="h-3.5 w-3.5" />

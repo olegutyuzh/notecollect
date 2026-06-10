@@ -37,7 +37,7 @@ async function LocaleFooter({ locale }: { locale: string }) {
   const t = await getTranslations('Footer')
   const year = new Date().getFullYear()
   return (
-    <footer className="border-t border-gray-200 bg-white mt-16 py-8 text-center text-sm text-gray-500">
+    <footer className="border-t border-white/10 mt-16 py-8 text-center text-sm text-slate-500">
       {t('copy', { year })}
     </footer>
   )

@@ -20,12 +20,10 @@ interface SearchParams {
   dir?: string
 }
 
-// ── Sort helpers ───────────────────────────────────────────────────────────
 const GRADE_ORDER: Record<string, number> = {
   UNC: 1, AUNC: 2, AU: 3, XF: 4, VF: 5, F: 6, VG: 7, G: 8, AG: 9, FR: 10, P: 11,
 }
 
-// ── Types ──────────────────────────────────────────────────────────────────
 type ItemFull = CollectedItem & {
   collectibles: CollectibleWithRelations
   collectible_variations: CollectibleVariation | null
@@ -49,7 +47,6 @@ type CountryGroup = {
   series: SeriesGroup[]
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
 function parseRefs(refs: unknown, numistaId?: number): string {
   const parts: string[] = []
   if (Array.isArray(refs)) {
@@ -71,29 +68,29 @@ function formatPrice(value: number | null, currency: string | null) {
 }
 
 const GRADE_COLORS: Record<string, string> = {
-  UNC: 'bg-emerald-100 text-emerald-800',
-  AU:  'bg-teal-100 text-teal-800',
-  XF:  'bg-blue-100 text-blue-800',
-  VF:  'bg-sky-100 text-sky-800',
-  F:   'bg-amber-100 text-amber-800',
-  VG:  'bg-orange-100 text-orange-800',
-  G:   'bg-red-100 text-red-800',
+  UNC:  'bg-emerald-500/15 text-emerald-400',
+  AUNC: 'bg-teal-500/15 text-teal-400',
+  AU:   'bg-teal-500/15 text-teal-400',
+  XF:   'bg-blue-500/15 text-blue-400',
+  VF:   'bg-sky-500/15 text-sky-400',
+  F:    'bg-amber-500/15 text-amber-400',
+  VG:   'bg-orange-500/15 text-orange-400',
+  G:    'bg-red-500/15 text-red-400',
 }
 
-// ── Page ───────────────────────────────────────────────────────────────────
 export default async function CollectionPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const sp      = await searchParams
+  const sp       = await searchParams
   const supabase = await createServerSupabaseClient()
-  const t       = await getTranslations('Collection')
-  const tn      = await getTranslations('Nav')
+  const t        = await getTranslations('Collection')
+  const tn       = await getTranslations('Nav')
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     return (
       <div className="mx-auto max-w-md px-4 py-24 text-center">
-        <Star className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-        <h1 className="text-xl font-semibold text-gray-900 mb-2">{t('authRequired')}</h1>
-        <p className="text-gray-500 text-sm mb-6">{t('authDesc')}</p>
+        <Star className="h-12 w-12 text-slate-600 mx-auto mb-4" />
+        <h1 className="text-xl font-semibold text-white mb-2">{t('authRequired')}</h1>
+        <p className="text-slate-400 text-sm mb-6">{t('authDesc')}</p>
         <div className="flex gap-3 justify-center">
           <Link href="/auth/login" className="btn-secondary">{tn('login')}</Link>
           <Link href="/auth/register" className="btn-primary">{tn('register')}</Link>
@@ -102,7 +99,6 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
     )
   }
 
-  // Country filter
   let countryId: number | null = null
   let countryName: string | null = null
   let countryFlag: string | null = null
@@ -113,30 +109,27 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
       .eq('code', sp.country)
       .single() as unknown as { data: Pick<Country, 'id' | 'name_uk' | 'name_en' | 'flag_emoji'> | null }
     if (cr) {
-      countryId  = cr.id
+      countryId   = cr.id
       countryName = cr.name_uk ?? cr.name_en ?? sp.country
       countryFlag = cr.flag_emoji ?? null
     }
   }
 
-  // Main query
   let q = supabase
     .from('collected_items')
     .select('*, collectibles(*, countries(*)), collectible_variations(*)')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
-  if (countryId !== null)      q = q.eq('collectibles.country_id', countryId)
-  if (sp.grading_company)     q = q.eq('grading_company', sp.grading_company)
-  if (sp.slab_grade)          q = q.eq('slab_grade', sp.slab_grade)
+  if (countryId !== null)  q = q.eq('collectibles.country_id', countryId)
+  if (sp.grading_company)  q = q.eq('grading_company', sp.grading_company)
+  if (sp.slab_grade)       q = q.eq('slab_grade', sp.slab_grade)
 
   const { data: rawItems } = await q
-
   const allItems = (countryId !== null
     ? (rawItems ?? []).filter((i: any) => i.collectibles !== null)
     : (rawItems ?? [])) as unknown as ItemFull[]
 
-  // Batch-fetch collectible_details for refs + series
   const collectibleIds = [...new Set(allItems.map(i => i.collectibles?.id).filter((id): id is number => !!id))]
   type DetailRow = { collectible_id: number; series: unknown; references_data: unknown }
   const detailsResult = collectibleIds.length
@@ -151,7 +144,6 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
     detailsMap.set(d.collectible_id, { series, refs })
   }
 
-  // ── Group: country → series → collectible ──
   const countryOrder: string[] = []
   const countryMap = new Map<string, CountryGroup>()
 
@@ -184,7 +176,6 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
     col.totalQty += item.quantity ?? 1
   }
 
-  // Sort series & collectibles alphabetically
   for (const cg of countryMap.values()) {
     cg.series.sort((a, b) => a.name.localeCompare(b.name))
     for (const sg of cg.series) {
@@ -201,7 +192,6 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
   const totalItems  = allItems.reduce((s, i) => s + (i.quantity ?? 1), 0)
   const uniqueCount = allItems.length
 
-  // ── Sort ───────────────────────────────────────────────────────────────────
   const sort = sp.sort ?? 'country'
   const dir: 'asc' | 'desc' = sp.dir === 'desc' ? 'desc' : 'asc'
 
@@ -213,7 +203,6 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
     })
   }
 
-  // ── Pagination: flatten → slice → rebuild grouped structure ────────────────
   type FlatGroup = { cKey: string; cg: CountryGroup; sg: SeriesGroup; col: CollectibleGroup }
   const flatGroups: FlatGroup[] = []
   for (const cKey of countryOrder) {
@@ -225,7 +214,6 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
     }
   }
 
-  // Sort flat groups for non-country sorts
   if (sort === 'grade') {
     flatGroups.sort((a, b) => {
       const bestRank = (items: ItemFull[]) => {
@@ -267,7 +255,6 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
   const page = Math.max(1, Math.min(parseInt(sp.page ?? '1') || 1, Math.max(1, totalPages)))
   const pageSlice = flatGroups.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
-  // Rebuild country/series structure for just this page's slice
   const pageCountryOrder: string[] = []
   const pageCountryMap = new Map<string, CountryGroup>()
   for (const { cKey, cg, sg, col } of pageSlice) {
@@ -297,11 +284,11 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+          <p className="text-slate-400 text-sm mt-1">
             {t('subtitle', { unique: uniqueCount, total: totalItems })}
             {totalPages > 1 && (
-              <span className="ml-2 text-gray-400">· сторінка {page} з {totalPages}</span>
+              <span className="ml-2 text-slate-500">· сторінка {page} з {totalPages}</span>
             )}
           </p>
         </div>
@@ -312,249 +299,240 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
       </div>
 
       <div className="flex gap-5 items-start">
-      {/* Sort sidebar */}
-      <SortPanel
-        sort={sort}
-        dir={dir}
-        country={sp.country}
-        grading_company={sp.grading_company}
-        slab_grade_filter={sp.slab_grade}
-      />
+        <SortPanel
+          sort={sort}
+          dir={dir}
+          country={sp.country}
+          grading_company={sp.grading_company}
+          slab_grade_filter={sp.slab_grade}
+        />
 
-      <div className="flex-1 min-w-0">
-      {/* Active filter badges */}
-      {(countryName || sp.grading_company || sp.slab_grade) && (
-        <div className="flex items-center gap-2 mb-5 flex-wrap">
-          {countryName && (
-            <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-800 text-sm font-medium px-3 py-1.5 rounded-full border border-blue-200">
-              {countryFlag && <span>{countryFlag}</span>}
-              {countryName}
-            </span>
+        <div className="flex-1 min-w-0">
+          {/* Active filter badges */}
+          {(countryName || sp.grading_company || sp.slab_grade) && (
+            <div className="flex items-center gap-2 mb-5 flex-wrap">
+              {countryName && (
+                <span className="inline-flex items-center gap-1.5 bg-[#c9a96e]/10 text-[#c9a96e] text-sm font-medium px-3 py-1.5 rounded-full border border-[#c9a96e]/20">
+                  {countryFlag && <span>{countryFlag}</span>}
+                  {countryName}
+                </span>
+              )}
+              {sp.grading_company && (
+                <span className="inline-flex items-center gap-1.5 bg-purple-500/10 text-purple-300 text-sm font-medium px-3 py-1.5 rounded-full border border-purple-500/20">
+                  🏆 {sp.grading_company}
+                </span>
+              )}
+              {sp.slab_grade && (
+                <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 text-sm font-medium px-3 py-1.5 rounded-full border border-emerald-500/20">
+                  Грейд {sp.slab_grade}
+                </span>
+              )}
+              <Link href="/collection" className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300">
+                <X className="h-3.5 w-3.5" />
+                Скинути фільтри
+              </Link>
+            </div>
           )}
-          {sp.grading_company && (
-            <span className="inline-flex items-center gap-1.5 bg-violet-50 text-violet-800 text-sm font-medium px-3 py-1.5 rounded-full border border-violet-200">
-              🏆 {sp.grading_company}
-            </span>
-          )}
-          {sp.slab_grade && (
-            <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 text-sm font-medium px-3 py-1.5 rounded-full border border-emerald-200">
-              Грейд {sp.slab_grade}
-            </span>
-          )}
-          <Link href="/collection" className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700">
-            <X className="h-3.5 w-3.5" />
-            Скинути фільтри
-          </Link>
-        </div>
-      )}
 
-      {!allItems.length ? (
-        <div className="text-center py-20 text-gray-400">
-          <Star className="w-12 h-12 mx-auto mb-4 opacity-30" />
-          <p className="font-medium">{t('emptyTitle')}</p>
-          <p className="text-sm mt-1">{t('emptyDesc')}</p>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {pageCountryOrder.map(cKey => {
-            const cg = pageCountryMap.get(cKey)!
-            return (
-              <div key={cKey}>
-                {/* Country header */}
-                <h2 className="text-base font-semibold text-gray-900 pb-1 border-b-2 border-blue-500 mb-4">
-                  {cg.flag && <span className="mr-1.5">{cg.flag}</span>}
-                  {cg.name}
-                </h2>
+          {!allItems.length ? (
+            <div className="text-center py-20 text-slate-600">
+              <Star className="w-12 h-12 mx-auto mb-4 opacity-30" />
+              <p className="font-medium">{t('emptyTitle')}</p>
+              <p className="text-sm mt-1">{t('emptyDesc')}</p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {pageCountryOrder.map(cKey => {
+                const cg = pageCountryMap.get(cKey)!
+                return (
+                  <div key={cKey}>
+                    {/* Country header */}
+                    <h2 className="text-base font-semibold text-white pb-1 border-b-2 border-[#c9a96e] mb-4">
+                      {cg.flag && <span className="mr-1.5">{cg.flag}</span>}
+                      {cg.name}
+                    </h2>
 
-                <div className="space-y-6">
-                  {cg.series.map(sg => (
-                    <div key={sg.name}>
-                      {/* Series header */}
-                      <h3 className="text-sm font-semibold text-blue-700 mb-2 pl-1">
-                        {sg.name}
-                      </h3>
+                    <div className="space-y-6">
+                      {cg.series.map(sg => (
+                        <div key={sg.name}>
+                          {/* Series header */}
+                          <h3 className="text-sm font-semibold text-[#c9a96e]/70 mb-2 pl-1">
+                            {sg.name}
+                          </h3>
 
-                      <div className="space-y-3">
-                        {sg.collectibles.map(colGroup => {
-                          const c = colGroup.collectible
-                          return (
-                            <div key={c?.id} className="card overflow-hidden">
-                              {/* Collectible header row */}
-                              <div className="flex items-center gap-3 px-3 py-2 bg-gray-50 border-b border-gray-100">
-                                {/* Thumbnails */}
-                                <div className="flex gap-1 shrink-0">
-                                  {c?.obverse_thumbnail && (
-                                    <div className="relative w-12 h-8 rounded overflow-hidden bg-white border border-gray-200">
-                                      <Image src={c.obverse_thumbnail} alt="" fill className="object-contain" />
-                                    </div>
-                                  )}
-                                  {c?.reverse_thumbnail && (
-                                    <div className="relative w-12 h-8 rounded overflow-hidden bg-white border border-gray-200">
-                                      <Image src={c.reverse_thumbnail} alt="" fill className="object-contain" />
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Title + refs + count */}
-                                <div className="flex-1 min-w-0">
-                                  <Link
-                                    href={`/catalog/${c?.id}`}
-                                    className="text-sm font-medium text-blue-700 hover:text-blue-900 hover:underline truncate block"
-                                  >
-                                    {c?.title}
-                                    {colGroup.refs && (
-                                      <span className="ml-1.5 text-xs text-gray-400 font-normal">{colGroup.refs}</span>
-                                    )}
-                                  </Link>
-                                  <p className="text-xs text-gray-500 mt-0.5">
-                                    In my collection: <span className="font-semibold text-gray-700">{colGroup.totalQty}</span>
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Items */}
-                              <div className="divide-y divide-gray-50">
-                                {colGroup.items.map((item) => {
-                                  const v = item.collectible_variations
-                                  const pics = (item.pictures as NumistaPicture[] | null) ?? []
-                                  const hasPics = pics.length > 0
-                                  const price = formatPrice(item.price_value, item.price_currency)
-                                  const gradeColor = item.grade
-                                    ? (GRADE_COLORS[item.grade.toUpperCase()] ?? 'bg-gray-100 text-gray-700')
-                                    : ''
-
-                                  return (
-                                    <div key={item.id}>
-                                      {/* Variation sub-header */}
-                                      {v && (
-                                        <div className="px-4 pt-2 pb-0.5 text-xs text-gray-500 flex gap-2 flex-wrap">
-                                          {(v.gregorian_year ?? v.year) && (
-                                            <span className="font-medium text-gray-700">
-                                              {v.gregorian_year ?? v.year}
-                                            </span>
-                                          )}
-                                          {v.comment && (
-                                            <span className="text-gray-400">{v.comment}</span>
-                                          )}
+                          <div className="space-y-3">
+                            {sg.collectibles.map(colGroup => {
+                              const c = colGroup.collectible
+                              return (
+                                <div key={c?.id} className="card overflow-hidden">
+                                  {/* Collectible header row */}
+                                  <div className="flex items-center gap-3 px-3 py-2 bg-white/[0.04] border-b border-white/10">
+                                    {/* Thumbnails */}
+                                    <div className="flex gap-1 shrink-0">
+                                      {c?.obverse_thumbnail && (
+                                        <div className="relative w-12 h-8 rounded overflow-hidden bg-white/5 border border-white/10">
+                                          <Image src={c.obverse_thumbnail} alt="" fill className="object-contain" />
                                         </div>
                                       )}
-
-                                      {/* Item detail row */}
-                                      <div className="px-4 py-2 flex items-center gap-2 flex-wrap">
-                                        {/* Qty × Grade */}
-                                        <span className="text-sm font-medium text-gray-700 shrink-0">
-                                          {item.quantity > 1 ? `${item.quantity}×` : '1×'}
-                                        </span>
-                                        {item.grade && (
-                                          <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${gradeColor}`}>
-                                            {item.grade}
-                                          </span>
-                                        )}
-
-                                        {/* Photos */}
-                                        {hasPics && (
-                                          <Link
-                                            href={`/collection/${item.id}`}
-                                            title="Є фото"
-                                            className="text-gray-400 hover:text-blue-500"
-                                          >
-                                            <Camera className="h-3.5 w-3.5" />
-                                          </Link>
-                                        )}
-
-                                        {/* Grading slab */}
-                                        {(item.grading_company || item.slab_grade) && (
-                                          <span className="inline-flex items-center gap-1 text-xs text-gray-600">
-                                            <Award className="h-3 w-3 text-gray-400 shrink-0" />
-                                            <span className="font-medium">{item.grading_company}</span>
-                                            {item.slab_grade && (
-                                              <span className="font-semibold">{item.slab_grade}</span>
-                                            )}
-                                            {Array.isArray(item.grading_designations) && item.grading_designations.length > 0 && (
-                                              (item.grading_designations as { value: string }[]).map((d, i) => (
-                                                <span key={i} className="text-purple-700 font-medium bg-purple-50 px-1 rounded">
-                                                  {d.value}
-                                                </span>
-                                              ))
-                                            )}
-                                            {item.slab_number && (
-                                              item.grading_company?.toUpperCase().includes('PMG') ? (
-                                                <a
-                                                  href={`https://www.pmgnotes.com/certlookup/${item.slab_number}/${item.slab_grade ?? ''}/`}
-                                                  target="_blank"
-                                                  rel="noopener noreferrer"
-                                                  className="text-blue-600 hover:underline font-mono"
-                                                >
-                                                  #{item.slab_number}
-                                                </a>
-                                              ) : (
-                                                <Link
-                                                  href={`/collection/${item.id}`}
-                                                  className="text-blue-600 hover:underline font-mono"
-                                                >
-                                                  #{item.slab_number}
-                                                </Link>
-                                              )
-                                            )}
-                                          </span>
-                                        )}
-
-                                        {/* Serial number */}
-                                        {item.serial_number && (
-                                          <span className="inline-flex items-center gap-0.5 text-xs text-gray-600">
-                                            <Hash className="h-3 w-3 text-gray-400 shrink-0" />
-                                            <span className="font-mono">{item.serial_number}</span>
-                                          </span>
-                                        )}
-
-                                        {/* Price */}
-                                        {price && (
-                                          <span className="inline-flex items-center gap-0.5 text-xs text-gray-600">
-                                            <DollarSign className="h-3 w-3 text-gray-400 shrink-0" />
-                                            {price}
-                                          </span>
-                                        )}
-
-                                        {/* Note */}
-                                        {item.private_comment && (
-                                          <span className="inline-flex items-center gap-0.5 text-xs text-gray-400" title={item.private_comment}>
-                                            <MessageSquare className="h-3 w-3 shrink-0" />
-                                            <span className="truncate max-w-[120px]">{item.private_comment}</span>
-                                          </span>
-                                        )}
-
-                                        {/* For swap */}
-                                        {item.for_swap && (
-                                          <span className="text-xs bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded font-medium">
-                                            Обмін
-                                          </span>
-                                        )}
-
-                                        {/* Actions */}
-                                        <span className="ml-auto flex items-center gap-1 shrink-0">
-                                          <EditCollectedItemButton item={item} />
-                                          <DeleteCollectedItemButton itemId={item.id} />
-                                        </span>
-                                      </div>
+                                      {c?.reverse_thumbnail && (
+                                        <div className="relative w-12 h-8 rounded overflow-hidden bg-white/5 border border-white/10">
+                                          <Image src={c.reverse_thumbnail} alt="" fill className="object-contain" />
+                                        </div>
+                                      )}
                                     </div>
-                                  )
-                                })}
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
+
+                                    {/* Title + refs + count */}
+                                    <div className="flex-1 min-w-0">
+                                      <Link
+                                        href={`/catalog/${c?.id}`}
+                                        className="text-sm font-medium text-[#c9a96e] hover:text-[#c9a96e]/80 hover:underline truncate block"
+                                      >
+                                        {c?.title}
+                                        {colGroup.refs && (
+                                          <span className="ml-1.5 text-xs text-slate-500 font-normal">{colGroup.refs}</span>
+                                        )}
+                                      </Link>
+                                      <p className="text-xs text-slate-500 mt-0.5">
+                                        In my collection: <span className="font-semibold text-slate-300">{colGroup.totalQty}</span>
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  {/* Items */}
+                                  <div className="divide-y divide-white/5">
+                                    {colGroup.items.map((item) => {
+                                      const v = item.collectible_variations
+                                      const pics = (item.pictures as NumistaPicture[] | null) ?? []
+                                      const hasPics = pics.length > 0
+                                      const price = formatPrice(item.price_value, item.price_currency)
+                                      const gradeColor = item.grade
+                                        ? (GRADE_COLORS[item.grade.toUpperCase()] ?? 'bg-white/10 text-slate-400')
+                                        : ''
+
+                                      return (
+                                        <div key={item.id}>
+                                          {/* Variation sub-header */}
+                                          {v && (
+                                            <div className="px-4 pt-2 pb-0.5 text-xs text-slate-500 flex gap-2 flex-wrap">
+                                              {(v.gregorian_year ?? v.year) && (
+                                                <span className="font-medium text-slate-300">
+                                                  {v.gregorian_year ?? v.year}
+                                                </span>
+                                              )}
+                                              {v.comment && (
+                                                <span className="text-slate-500">{v.comment}</span>
+                                              )}
+                                            </div>
+                                          )}
+
+                                          {/* Item detail row */}
+                                          <div className="px-4 py-2 flex items-center gap-2 flex-wrap">
+                                            <span className="text-sm font-medium text-slate-300 shrink-0">
+                                              {item.quantity > 1 ? `${item.quantity}×` : '1×'}
+                                            </span>
+                                            {item.grade && (
+                                              <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${gradeColor}`}>
+                                                {item.grade}
+                                              </span>
+                                            )}
+
+                                            {hasPics && (
+                                              <Link
+                                                href={`/collection/${item.id}`}
+                                                title="є фото"
+                                                className="text-slate-500 hover:text-[#c9a96e]"
+                                              >
+                                                <Camera className="h-3.5 w-3.5" />
+                                              </Link>
+                                            )}
+
+                                            {(item.grading_company || item.slab_grade) && (
+                                              <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+                                                <Award className="h-3 w-3 text-slate-600 shrink-0" />
+                                                <span className="font-medium">{item.grading_company}</span>
+                                                {item.slab_grade && (
+                                                  <span className="font-semibold">{item.slab_grade}</span>
+                                                )}
+                                                {Array.isArray(item.grading_designations) && item.grading_designations.length > 0 && (
+                                                  (item.grading_designations as { value: string }[]).map((d, i) => (
+                                                    <span key={i} className="text-purple-300 font-medium bg-purple-500/10 px-1 rounded">
+                                                      {d.value}
+                                                    </span>
+                                                  ))
+                                                )}
+                                                {item.slab_number && (
+                                                  item.grading_company?.toUpperCase().includes('PMG') ? (
+                                                    <a
+                                                      href={`https://www.pmgnotes.com/certlookup/${item.slab_number}/${item.slab_grade ?? ''}/`}
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                      className="text-[#c9a96e] hover:underline font-mono"
+                                                    >
+                                                      #{item.slab_number}
+                                                    </a>
+                                                  ) : (
+                                                    <Link
+                                                      href={`/collection/${item.id}`}
+                                                      className="text-[#c9a96e] hover:underline font-mono"
+                                                    >
+                                                      #{item.slab_number}
+                                                    </Link>
+                                                  )
+                                                )}
+                                              </span>
+                                            )}
+
+                                            {item.serial_number && (
+                                              <span className="inline-flex items-center gap-0.5 text-xs text-slate-400">
+                                                <Hash className="h-3 w-3 text-slate-600 shrink-0" />
+                                                <span className="font-mono">{item.serial_number}</span>
+                                              </span>
+                                            )}
+
+                                            {price && (
+                                              <span className="inline-flex items-center gap-0.5 text-xs text-slate-400">
+                                                <DollarSign className="h-3 w-3 text-slate-600 shrink-0" />
+                                                {price}
+                                              </span>
+                                            )}
+
+                                            {item.private_comment && (
+                                              <span className="inline-flex items-center gap-0.5 text-xs text-slate-500" title={item.private_comment}>
+                                                <MessageSquare className="h-3 w-3 shrink-0" />
+                                                <span className="truncate max-w-[120px]">{item.private_comment}</span>
+                                              </span>
+                                            )}
+
+                                            {item.for_swap && (
+                                              <span className="text-xs bg-amber-500/10 text-amber-400 px-1.5 py-0.5 rounded font-medium">
+                                                Обмін
+                                              </span>
+                                            )}
+
+                                            <span className="ml-auto flex items-center gap-1 shrink-0">
+                                              <EditCollectedItemButton item={item} />
+                                              <DeleteCollectedItemButton itemId={item.id} />
+                                            </span>
+                                          </div>
+                                        </div>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-            )
-          })}
-          <Pagination currentPage={page} totalPages={totalPages} getHref={getHref} />
+                  </div>
+                )
+              })}
+              <Pagination currentPage={page} totalPages={totalPages} getHref={getHref} />
+            </div>
+          )}
         </div>
-      )}
       </div>
     </div>
-  </div>
   )
 }

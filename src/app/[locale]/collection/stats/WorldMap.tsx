@@ -7,7 +7,6 @@ import { feature, mesh } from 'topojson-client'
 import { AlertCircle } from 'lucide-react'
 import type { CountryStat } from './types'
 
-// ISO 3166-1 numeric → alpha-2 map
 const NUM_TO_A2: Record<number, string> = {
   4:'AF',8:'AL',12:'DZ',20:'AD',24:'AO',32:'AR',36:'AU',40:'AT',
   44:'BS',48:'BH',50:'BD',52:'BB',56:'BE',64:'BT',68:'BO',70:'BA',
@@ -36,9 +35,9 @@ const NUM_TO_A2: Record<number, string> = {
 }
 
 function getColor(count: number): string {
-  if (count === 0)  return '#e5e7eb'
-  if (count <= 2)   return '#bfdbfe'
-  if (count <= 5)   return '#60a5fa'
+  if (count === 0)  return '#132d4d'
+  if (count <= 2)   return '#1d4ed8'
+  if (count <= 5)   return '#3b82f6'
   if (count <= 15)  return '#f59e0b'
   if (count <= 30)  return '#f97316'
   return '#dc2626'
@@ -57,7 +56,6 @@ export default function WorldMap({ countryStats, onCountryClick }: Props) {
   const [mapError, setMapError] = useState(false)
 
   useEffect(() => {
-    // Prevent double-render (React Strict Mode)
     if (renderedRef.current) return
     renderedRef.current = true
 
@@ -87,7 +85,7 @@ export default function WorldMap({ countryStats, onCountryClick }: Props) {
 
       const svg = select(mapRef.current)
         .attr('width', W).attr('height', H)
-        .style('background', '#f1f5f9').style('border-radius', '8px')
+        .style('background', '#0a1929').style('border-radius', '8px')
       svg.selectAll('*').remove()
 
       const proj = geoNaturalEarth1().scale(W / 2 / Math.PI).translate([W / 2, H / 2])
@@ -101,7 +99,7 @@ export default function WorldMap({ countryStats, onCountryClick }: Props) {
         .attr('d', path as any)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .attr('fill', (d: any) => { const a2 = NUM_TO_A2[parseInt(d.id)]; return getColor(a2 ? (countByA2[a2] ?? 0) : 0) })
-        .attr('stroke', '#ffffff').attr('stroke-width', 0.4)
+        .attr('stroke', '#07111f').attr('stroke-width', 0.5)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .style('cursor', (d: any) => { const a2 = NUM_TO_A2[parseInt(d.id)]; return a2 && infoByA2[a2] ? 'pointer' : 'default' })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -119,26 +117,25 @@ export default function WorldMap({ countryStats, onCountryClick }: Props) {
         })
 
       svg.append('path').datum(geoGraticule()())
-        .attr('fill', 'none').attr('stroke', '#cbd5e1').attr('stroke-width', 0.3)
+        .attr('fill', 'none').attr('stroke', '#0f2a4a').attr('stroke-width', 0.4)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .attr('d', path as any)
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       svg.append('path').datum(mesh(world as any, (world as any).objects.countries, (a: any, b: any) => a !== b) as any)
-        .attr('fill', 'none').attr('stroke', '#ffffff').attr('stroke-width', 0.5)
+        .attr('fill', 'none').attr('stroke', '#07111f').attr('stroke-width', 0.6)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .attr('d', path as any)
     }
 
     render().catch(() => setMapError(true))
-  // countryStats and onCountryClick are stable (server-computed / useCallback)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
     <div ref={containerRef} className="relative w-full">
       {mapError ? (
-        <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 rounded-lg p-4">
+        <div className="flex items-center gap-2 text-sm text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           Не вдалося завантажити карту світу
         </div>
@@ -147,7 +144,7 @@ export default function WorldMap({ countryStats, onCountryClick }: Props) {
           <svg ref={mapRef} className="w-full" />
           {tooltip && (
             <div
-              className="absolute pointer-events-none bg-gray-900 text-white text-xs rounded-md px-2.5 py-1.5 whitespace-nowrap z-10 shadow-xl"
+              className="absolute pointer-events-none bg-[#0d1f33] border border-white/10 text-white text-xs rounded-md px-2.5 py-1.5 whitespace-nowrap z-10 shadow-xl"
               style={{ left: tooltip.x, top: tooltip.y }}
             >
               {tooltip.html}

@@ -34,17 +34,17 @@ export function CollectiblesTable({ collectibles, countries, currencies }: Props
 
   return (
     <>
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="card overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 w-16">ID</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 w-24">Фото</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Назва</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Емітент</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Країна</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Роки</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Тип</th>
+            <tr className="border-b border-white/10 bg-white/[0.04]">
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 w-16">ID</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-slate-500 w-24">Фото</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">Назва</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">Емітент</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">Країна</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">Роки</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-slate-500">Тип</th>
               <th className="px-4 py-3 w-10" />
             </tr>
           </thead>
@@ -55,8 +55,8 @@ export function CollectiblesTable({ collectibles, countries, currencies }: Props
                 : c.min_year?.toString() ?? '—'
               const ct = c.countries
               return (
-                <tr key={c.id} className="border-t border-gray-100 hover:bg-gray-50/60">
-                  <td className="px-4 py-2.5 text-gray-400 tabular-nums">{c.id}</td>
+                <tr key={c.id} className="border-t border-white/8 hover:bg-white/[0.03]">
+                  <td className="px-4 py-2.5 text-slate-500 tabular-nums">{c.id}</td>
                   <td className="px-3 py-2">
                     <div className="flex gap-1">
                       {c.obverse_thumbnail ? (
@@ -65,11 +65,11 @@ export function CollectiblesTable({ collectibles, countries, currencies }: Props
                           alt="аверс"
                           width={36}
                           height={22}
-                          className="rounded object-cover border border-gray-100"
+                          className="rounded object-cover border border-white/10"
                           unoptimized
                         />
                       ) : (
-                        <div className="w-9 h-[22px] rounded border border-dashed border-gray-200 bg-gray-50" />
+                        <div className="w-9 h-[22px] rounded border border-dashed border-white/10 bg-white/[0.03]" />
                       )}
                       {c.reverse_thumbnail ? (
                         <Image
@@ -77,25 +77,25 @@ export function CollectiblesTable({ collectibles, countries, currencies }: Props
                           alt="реверс"
                           width={36}
                           height={22}
-                          className="rounded object-cover border border-gray-100"
+                          className="rounded object-cover border border-white/10"
                           unoptimized
                         />
                       ) : (
-                        <div className="w-9 h-[22px] rounded border border-dashed border-gray-200 bg-gray-50" />
+                        <div className="w-9 h-[22px] rounded border border-dashed border-white/10 bg-white/[0.03]" />
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-2.5 font-medium text-gray-900 max-w-[200px] truncate">{c.title}</td>
-                  <td className="px-4 py-2.5 text-gray-500 max-w-[130px] truncate">{c.issuer_name ?? '—'}</td>
-                  <td className="px-4 py-2.5 text-gray-500">
+                  <td className="px-4 py-2.5 font-medium text-slate-100 max-w-[200px] truncate">{c.title}</td>
+                  <td className="px-4 py-2.5 text-slate-400 max-w-[130px] truncate">{c.issuer_name ?? '—'}</td>
+                  <td className="px-4 py-2.5 text-slate-400">
                     {ct ? `${ct.flag_emoji ?? ''} ${ct.name_uk ?? ct.name_en ?? ''}`.trim() : '—'}
                   </td>
-                  <td className="px-4 py-2.5 text-gray-500 tabular-nums">{years}</td>
-                  <td className="px-4 py-2.5 text-gray-500">{CAT_LABEL[c.category_code] ?? c.category_code}</td>
+                  <td className="px-4 py-2.5 text-slate-400 tabular-nums">{years}</td>
+                  <td className="px-4 py-2.5 text-slate-400">{CAT_LABEL[c.category_code] ?? c.category_code}</td>
                   <td className="px-3 py-2.5">
                     <button
                       onClick={() => setEditing(c)}
-                      className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                      className="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-slate-500 hover:border-[#c9a96e]/40 hover:text-[#c9a96e] hover:bg-[#c9a96e]/5 transition-colors"
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </button>

@@ -68,30 +68,32 @@ export default async function AdminCollectiblesPage({ searchParams }: { searchPa
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Каталог</h1>
-      <p className="text-gray-500 text-sm mb-6">
+      <h1 className="text-2xl font-bold text-white mb-1">Каталог</h1>
+      <p className="text-slate-400 text-sm mb-6">
         {total ?? 0} позицій
         {totalPages > 1 && ` · стор. ${page} з ${totalPages}`}
-        {activeFilters > 0 && <span className="ml-2 text-blue-600 font-medium">(фільтр активний)</span>}
+        {activeFilters > 0 && <span className="ml-2 text-[#c9a96e] font-medium">(фільтр активний)</span>}
       </p>
 
       {/* Filters */}
       <form className="mb-5 flex flex-wrap gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Назва</label>
+          <label className="block text-xs text-slate-500 mb-1">Назва</label>
           <input
             name="q"
             defaultValue={sp.q ?? ''}
             placeholder="Пошук за назвою..."
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-60 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            autoComplete="off"
+            suppressHydrationWarning
+            className="input text-sm w-60"
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Категорія</label>
+          <label className="block text-xs text-slate-500 mb-1">Категорія</label>
           <select
             name="category"
             defaultValue={sp.category ?? ''}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+            className="input text-sm w-40"
           >
             <option value="">— всі —</option>
             {CATEGORIES.map(cat => (
@@ -100,11 +102,11 @@ export default async function AdminCollectiblesPage({ searchParams }: { searchPa
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Країна</label>
+          <label className="block text-xs text-slate-500 mb-1">Країна</label>
           <select
             name="country"
             defaultValue={sp.country ?? ''}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-52 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+            className="input text-sm w-52"
           >
             <option value="">— всі країни —</option>
             {(countries ?? []).map(c => (
@@ -115,11 +117,11 @@ export default async function AdminCollectiblesPage({ searchParams }: { searchPa
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Валюта</label>
+          <label className="block text-xs text-slate-500 mb-1">Валюта</label>
           <select
             name="currency"
             defaultValue={sp.currency ?? ''}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm w-52 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white"
+            className="input text-sm w-52"
           >
             <option value="">— всі валюти —</option>
             {(currencies ?? []).map(c => (
@@ -144,11 +146,11 @@ export default async function AdminCollectiblesPage({ searchParams }: { searchPa
       {totalPages > 1 && (
         <div className="flex items-center gap-2 mt-5 justify-center">
           {page > 1 && (
-            <a href={pageHref(page - 1)} className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">‹ Назад</a>
+            <a href={pageHref(page - 1)} className="px-3 py-1.5 rounded-lg border border-white/10 text-sm text-slate-300 hover:bg-white/8">‹ Назад</a>
           )}
-          <span className="text-sm text-gray-500">Стор. {page} з {totalPages}</span>
+          <span className="text-sm text-slate-500">Стор. {page} з {totalPages}</span>
           {page < totalPages && (
-            <a href={pageHref(page + 1)} className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">Далі ›</a>
+            <a href={pageHref(page + 1)} className="px-3 py-1.5 rounded-lg border border-white/10 text-sm text-slate-300 hover:bg-white/8">Далі ›</a>
           )}
         </div>
       )}

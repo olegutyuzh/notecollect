@@ -10,7 +10,6 @@ import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 interface HeaderProps {
-  /** Admin status resolved server-side and passed as initial value */
   initialIsAdmin?: boolean
 }
 
@@ -37,8 +36,6 @@ export function Header({ initialIsAdmin = false }: HeaderProps) {
       setIsAdmin(profile?.role === 'admin')
     }
 
-    // onAuthStateChange fires immediately with INITIAL_SESSION,
-    // so no separate loadUser() call needed.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
       setUser(session?.user ?? null)
       await syncUser(session?.user?.id)
@@ -71,12 +68,12 @@ export function Header({ initialIsAdmin = false }: HeaderProps) {
   ]
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#07111f]/95 backdrop-blur">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 font-bold text-blue-700 text-lg">
+          <Link href="/" className="flex items-center gap-2 font-bold text-[#c9a96e] text-lg">
             <BookOpen className="h-6 w-6" />
             CollectorHub
           </Link>
@@ -94,11 +91,11 @@ export function Header({ initialIsAdmin = false }: HeaderProps) {
                     'flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                     isAdminLink
                       ? isActive
-                        ? 'bg-violet-50 text-violet-700'
-                        : 'text-violet-600 hover:bg-violet-50 hover:text-violet-800'
+                        ? 'bg-purple-500/20 text-purple-300'
+                        : 'text-purple-400 hover:bg-purple-500/10 hover:text-purple-300'
                       : isActive
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        ? 'bg-white/10 text-white'
+                        : 'text-slate-400 hover:bg-white/8 hover:text-slate-100'
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -116,9 +113,9 @@ export function Header({ initialIsAdmin = false }: HeaderProps) {
               <div className="relative">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 hover:bg-white/10 transition-colors"
                 >
-                  <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-semibold">
+                  <div className="w-7 h-7 rounded-full bg-[#c9a96e]/20 flex items-center justify-center text-[#c9a96e] text-xs font-semibold">
                     {user.email?.[0].toUpperCase()}
                   </div>
                   <span className="max-w-[140px] truncate">{user.email}</span>
@@ -127,10 +124,10 @@ export function Header({ initialIsAdmin = false }: HeaderProps) {
                 {userMenuOpen && (
                   <>
                     <div className="fixed inset-0" onClick={() => setUserMenuOpen(false)} />
-                    <div className="absolute right-0 mt-1 w-52 card py-1 shadow-lg z-50">
+                    <div className="absolute right-0 mt-1 w-52 rounded-xl border border-white/10 bg-[#0d1f33] py-1 shadow-xl z-50">
                       <Link
                         href="/collection"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-white/8 hover:text-white"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <Star className="h-4 w-4" />
@@ -138,7 +135,7 @@ export function Header({ initialIsAdmin = false }: HeaderProps) {
                       </Link>
                       <Link
                         href="/collection/stats"
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-slate-300 hover:bg-white/8 hover:text-white"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         <Globe className="h-4 w-4" />
@@ -146,10 +143,10 @@ export function Header({ initialIsAdmin = false }: HeaderProps) {
                       </Link>
                       {isAdmin && (
                         <>
-                          <div className="border-t border-gray-100 my-1" />
+                          <div className="border-t border-white/10 my-1" />
                           <Link
                             href="/admin"
-                            className="flex items-center gap-2 px-4 py-2 text-sm text-violet-700 hover:bg-violet-50"
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-purple-400 hover:bg-purple-500/10"
                             onClick={() => setUserMenuOpen(false)}
                           >
                             <ShieldCheck className="h-4 w-4" />
@@ -157,10 +154,10 @@ export function Header({ initialIsAdmin = false }: HeaderProps) {
                           </Link>
                         </>
                       )}
-                      <div className="border-t border-gray-100 my-1" />
+                      <div className="border-t border-white/10 my-1" />
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 w-full text-left"
                       >
                         <LogOut className="h-4 w-4" />
                         {t('logout')}
@@ -183,7 +180,7 @@ export function Header({ initialIsAdmin = false }: HeaderProps) {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+            className="md:hidden p-2 rounded-lg text-slate-400 hover:bg-white/10"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -193,19 +190,19 @@ export function Header({ initialIsAdmin = false }: HeaderProps) {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white px-4 py-3 space-y-1">
+        <div className="md:hidden border-t border-white/10 bg-[#07111f] px-4 py-3 space-y-1">
           {navLinks.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white"
               onClick={() => setMenuOpen(false)}
             >
               <Icon className="h-4 w-4" />
               {label}
             </Link>
           ))}
-          <div className="pt-2 border-t border-gray-100 space-y-1">
+          <div className="pt-2 border-t border-white/10 space-y-1">
             <div className="px-3 py-1">
               <LanguageSwitcher />
             </div>
@@ -214,7 +211,7 @@ export function Header({ initialIsAdmin = false }: HeaderProps) {
                 {isAdmin && (
                   <Link
                     href="/admin"
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-violet-700 hover:bg-violet-50"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-purple-400 hover:bg-purple-500/10"
                     onClick={() => setMenuOpen(false)}
                   >
                     <ShieldCheck className="h-4 w-4" />
@@ -223,7 +220,7 @@ export function Header({ initialIsAdmin = false }: HeaderProps) {
                 )}
                 <button
                   onClick={() => { handleLogout(); setMenuOpen(false) }}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 w-full"
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 w-full"
                 >
                   <LogOut className="h-4 w-4" />
                   {t('logout')}

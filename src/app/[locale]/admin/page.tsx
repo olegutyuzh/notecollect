@@ -20,27 +20,27 @@ export default async function AdminDashboardPage() {
   const userCount = usersData?.users?.length ?? 0
 
   const stats = [
-    { label: 'Позицій у каталозі', value: catalogCount ?? 0, icon: BookOpen, href: '/admin/collectibles', color: 'text-blue-600 bg-blue-50' },
-    { label: 'Користувачів',       value: userCount,          icon: Users,    href: '/admin/users',        color: 'text-violet-600 bg-violet-50' },
-    { label: 'Записів у колекціях',value: itemsCount ?? 0,    icon: Star,     href: null,                  color: 'text-emerald-600 bg-emerald-50' },
+    { label: 'Позицій у каталозі',  value: catalogCount ?? 0, icon: BookOpen, href: '/admin/collectibles', color: 'text-blue-400 bg-blue-500/10' },
+    { label: 'Користувачів',        value: userCount,          icon: Users,    href: '/admin/users',        color: 'text-purple-400 bg-purple-500/10' },
+    { label: 'Записів у колекціях', value: itemsCount ?? 0,    icon: Star,     href: null,                  color: 'text-emerald-400 bg-emerald-500/10' },
   ]
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Дашборд</h1>
-      <p className="text-gray-500 text-sm mb-8">Загальна статистика системи</p>
+      <h1 className="text-2xl font-bold text-white mb-1">Дашборд</h1>
+      <p className="text-slate-400 text-sm mb-8">Загальна статистика системи</p>
 
       <div className="grid grid-cols-3 gap-5 mb-10">
         {stats.map(({ label, value, icon: Icon, href, color }) => (
-          <div key={label} className="bg-white rounded-xl border border-gray-200 p-5">
+          <div key={label} className="card p-5">
             <div className={`inline-flex p-2.5 rounded-lg ${color} mb-4`}>
               <Icon className="h-5 w-5" />
             </div>
-            <p className="text-3xl font-bold text-gray-900">{value.toLocaleString()}</p>
+            <p className="text-3xl font-bold text-[#c9a96e]">{value.toLocaleString()}</p>
             <div className="flex items-center justify-between mt-1">
-              <p className="text-sm text-gray-500">{label}</p>
+              <p className="text-sm text-slate-400">{label}</p>
               {href && (
-                <Link href={href} className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-0.5">
+                <Link href={href} className="text-xs text-[#c9a96e] hover:text-[#c9a96e]/80 flex items-center gap-0.5">
                   Детальніше <ArrowRight className="h-3 w-3" />
                 </Link>
               )}
@@ -50,24 +50,24 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-5">
-        <Link href="/admin/users" className="bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all group">
+        <Link href="/admin/users" className="card p-5 hover:border-purple-500/30 transition-colors group">
           <div className="flex items-center gap-3 mb-2">
-            <Users className="h-5 w-5 text-violet-500" />
-            <h2 className="font-semibold text-gray-900">Управління користувачами</h2>
+            <Users className="h-5 w-5 text-purple-400" />
+            <h2 className="font-semibold text-white">Управління користувачами</h2>
           </div>
-          <p className="text-sm text-gray-500">Перегляд користувачів, зміна ролей (user / admin)</p>
-          <p className="text-xs text-blue-600 mt-3 group-hover:underline flex items-center gap-1">
+          <p className="text-sm text-slate-400">Перегляд користувачів, зміна ролей (user / admin)</p>
+          <p className="text-xs text-[#c9a96e] mt-3 group-hover:underline flex items-center gap-1">
             Відкрити <ArrowRight className="h-3 w-3" />
           </p>
         </Link>
 
-        <Link href="/admin/collectibles" className="bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all group">
+        <Link href="/admin/collectibles" className="card p-5 hover:border-blue-500/30 transition-colors group">
           <div className="flex items-center gap-3 mb-2">
-            <BookOpen className="h-5 w-5 text-blue-500" />
-            <h2 className="font-semibold text-gray-900">Редагування каталогу</h2>
+            <BookOpen className="h-5 w-5 text-blue-400" />
+            <h2 className="font-semibold text-white">Редагування каталогу</h2>
           </div>
-          <p className="text-sm text-gray-500">Редагування банкнот у каталозі: назва, емітент, роки, країна</p>
-          <p className="text-xs text-blue-600 mt-3 group-hover:underline flex items-center gap-1">
+          <p className="text-sm text-slate-400">Редагування банкнот у каталозі: назва, емітент, роки, країна</p>
+          <p className="text-xs text-[#c9a96e] mt-3 group-hover:underline flex items-center gap-1">
             Відкрити <ArrowRight className="h-3 w-3" />
           </p>
         </Link>
