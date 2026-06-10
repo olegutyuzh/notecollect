@@ -19,14 +19,24 @@ export default function ResetPasswordPage() {
   const [done, setDone] = useState(false)
   const [ready, setReady] = useState(false)
 
-  // Supabase redirects here with #access_token — wait for the session to be set
+  // With PKCE flow the code is exchanged server-side in /auth/callback, so by the
+  // time the user lands here the session is already in the cookie.
+  // We also keep the PASSWORD_RECOVERY listener for the implicit-flow fallback.
   useEffect(() => {
     const supabase = createClient()
+
+    // Check for an existing session (PKCE path)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setReady(true)
+    })
+
+    // Also handle implicit flow / direct links that still carry the token in the hash
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
         setReady(true)
       }
     })
+
     return () => subscription.unsubscribe()
   }, [])
 
