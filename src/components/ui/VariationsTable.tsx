@@ -40,12 +40,12 @@ interface Props {
 
 function sigInitials(sigs: NumistaSignature[]): string {
   return sigs
-    .map(s => s.signer_name.trim().split(/\s+/).map(p => p[0]?.toUpperCase() ?? '').join(''))
+    .map(s => (s.signer_name ?? '').trim().split(/\s+/).map((p: string) => p[0]?.toUpperCase() ?? '').join(''))
     .join(' / ')
 }
 
 function sigFullNames(sigs: NumistaSignature[]): string {
-  return sigs.map(s => `${s.signer_name}${s.title ? ` (${s.title})` : ''}`).join('\n')
+  return sigs.map(s => `${s.signer_name ?? ''}${s.title ? ` (${s.title})` : ''}`).join('\n')
 }
 
 function formatPrice(value: number | null, currency: string | null): string | null {

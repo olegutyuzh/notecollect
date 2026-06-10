@@ -17,7 +17,8 @@ async function assertAdmin() {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
-  const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const profileRes = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const data = profileRes.data as { role: string } | null
   if (data?.role !== 'admin') throw new Error('Not authorized')
 }
 

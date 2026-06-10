@@ -138,9 +138,11 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
 
   // Batch-fetch collectible_details for refs + series
   const collectibleIds = [...new Set(allItems.map(i => i.collectibles?.id).filter((id): id is number => !!id))]
-  const { data: detailsRows } = collectibleIds.length
+  type DetailRow = { collectible_id: number; series: unknown; references_data: unknown }
+  const detailsResult = collectibleIds.length
     ? await supabase.from('collectible_details').select('collectible_id, series, references_data').in('collectible_id', collectibleIds)
-    : { data: [] }
+    : { data: [] as DetailRow[] }
+  const detailsRows = detailsResult.data as DetailRow[] | null
 
   const detailsMap = new Map<number, { series: string | null; refs: string }>()
   for (const d of (detailsRows ?? [])) {
@@ -551,8 +553,8 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
           <Pagination currentPage={page} totalPages={totalPages} getHref={getHref} />
         </div>
       )}
-      </div> {/* flex-1 */}
-      </div> {/* flex gap-5 */}
+      </div>
     </div>
+  </div>
   )
 }

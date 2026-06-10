@@ -10,7 +10,8 @@ export async function updateUserRole(userId: string, role: 'user' | 'admin') {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const profileRes = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const profile = profileRes.data as { role: string } | null
   if (profile?.role !== 'admin') throw new Error('Not authorized')
 
   // Apply using service-role client (bypasses RLS)
