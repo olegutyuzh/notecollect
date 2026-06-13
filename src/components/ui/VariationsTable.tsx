@@ -56,27 +56,29 @@ function formatPrice(value: number | null, currency: string | null): string | nu
 }
 
 const GRADE_COLORS: Record<string, string> = {
-  UNC: 'bg-emerald-100 text-emerald-800',
-  AU:  'bg-teal-100 text-teal-800',
-  XF:  'bg-blue-100 text-blue-800',
-  VF:  'bg-sky-100 text-sky-800',
-  F:   'bg-amber-100 text-amber-800',
-  VG:  'bg-orange-100 text-orange-800',
-  G:   'bg-red-100 text-red-800',
+  UNC: 'bg-emerald-500/20 text-emerald-400',
+  AU:  'bg-teal-500/20 text-teal-400',
+  XF:  'bg-blue-500/20 text-blue-400',
+  VF:  'bg-sky-500/20 text-sky-400',
+  F:   'bg-amber-500/20 text-amber-400',
+  VG:  'bg-orange-500/20 text-orange-400',
+  G:   'bg-red-500/20 text-red-400',
 }
 
 function ItemRow({ item, onEdit }: { item: UserVariationItem; onEdit: () => void }) {
   const hasPics = Array.isArray(item.pictures) && (item.pictures as unknown[]).length > 0
   const price = formatPrice(item.price_value, item.price_currency)
-  const gradeColor = item.grade ? (GRADE_COLORS[item.grade.toUpperCase()] ?? 'bg-gray-100 text-gray-700') : ''
+  const gradeColor = item.grade
+    ? (GRADE_COLORS[item.grade.toUpperCase()] ?? 'bg-white/10 text-slate-300')
+    : ''
   const designations = Array.isArray(item.grading_designations)
     ? (item.grading_designations as { value: string }[])
     : []
 
   return (
-    <div className="flex items-center gap-2 flex-wrap py-1 pl-4 border-l-2 border-blue-200">
+    <div className="flex items-center gap-2 flex-wrap py-1 pl-4 border-l-2 border-[#c9a96e]/40">
       {/* Qty + Grade */}
-      <span className="text-sm font-medium text-gray-700 shrink-0">
+      <span className="text-sm font-medium text-slate-300 shrink-0">
         {item.quantity > 1 ? `${item.quantity}×` : '1×'}
       </span>
       {item.grade && (
@@ -87,19 +89,19 @@ function ItemRow({ item, onEdit }: { item: UserVariationItem; onEdit: () => void
 
       {/* Photos */}
       {hasPics && (
-        <Link href={`/collection/${item.id}`} title="Є фото" className="text-gray-400 hover:text-blue-500">
+        <Link href={`/collection/${item.id}`} title="Є фото" className="text-slate-500 hover:text-[#c9a96e]">
           <Camera className="h-3.5 w-3.5" />
         </Link>
       )}
 
       {/* Grading slab */}
       {(item.grading_company || item.slab_grade) && (
-        <span className="inline-flex items-center gap-1 text-xs text-gray-600">
-          <Award className="h-3 w-3 text-gray-400 shrink-0" />
+        <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+          <Award className="h-3 w-3 text-slate-500 shrink-0" />
           {item.grading_company && <span className="font-medium">{item.grading_company}</span>}
           {item.slab_grade && <span className="font-semibold">{item.slab_grade}</span>}
           {designations.map((d, i) => (
-            <span key={i} className="text-purple-700 font-medium bg-purple-50 px-1 rounded">
+            <span key={i} className="text-[#c9a96e] font-medium bg-[#c9a96e]/10 px-1 rounded">
               {d.value}
             </span>
           ))}
@@ -109,12 +111,12 @@ function ItemRow({ item, onEdit }: { item: UserVariationItem; onEdit: () => void
                 href={`https://www.pmgnotes.com/certlookup/${item.slab_number}/${item.slab_grade ?? ''}/`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline font-mono"
+                className="text-[#c9a96e] hover:underline font-mono"
               >
                 #{item.slab_number}
               </a>
             ) : (
-              <span className="text-blue-600 font-mono">#{item.slab_number}</span>
+              <span className="text-[#c9a96e] font-mono">#{item.slab_number}</span>
             )
           )}
         </span>
@@ -122,23 +124,23 @@ function ItemRow({ item, onEdit }: { item: UserVariationItem; onEdit: () => void
 
       {/* Serial number */}
       {item.serial_number && (
-        <span className="inline-flex items-center gap-0.5 text-xs text-gray-600">
-          <Hash className="h-3 w-3 text-gray-400 shrink-0" />
+        <span className="inline-flex items-center gap-0.5 text-xs text-slate-400">
+          <Hash className="h-3 w-3 text-slate-500 shrink-0" />
           <span className="font-mono">{item.serial_number}</span>
         </span>
       )}
 
       {/* Price */}
       {price && (
-        <span className="inline-flex items-center gap-0.5 text-xs text-gray-600">
-          <DollarSign className="h-3 w-3 text-gray-400 shrink-0" />
+        <span className="inline-flex items-center gap-0.5 text-xs text-slate-400">
+          <DollarSign className="h-3 w-3 text-slate-500 shrink-0" />
           {price}
         </span>
       )}
 
       {/* Private comment */}
       {item.private_comment && (
-        <span className="inline-flex items-center gap-0.5 text-xs text-gray-400" title={item.private_comment}>
+        <span className="inline-flex items-center gap-0.5 text-xs text-slate-500" title={item.private_comment}>
           <MessageSquare className="h-3 w-3 shrink-0" />
           <span className="truncate max-w-[140px]">{item.private_comment}</span>
         </span>
@@ -146,15 +148,15 @@ function ItemRow({ item, onEdit }: { item: UserVariationItem; onEdit: () => void
 
       {/* Public comment */}
       {item.public_comment && (
-        <span className="inline-flex items-center gap-0.5 text-xs text-gray-500" title={item.public_comment}>
-          <MessageSquare className="h-3 w-3 shrink-0 text-blue-400" />
+        <span className="inline-flex items-center gap-0.5 text-xs text-slate-400" title={item.public_comment}>
+          <MessageSquare className="h-3 w-3 shrink-0 text-[#c9a96e]/60" />
           <span className="truncate max-w-[140px]">{item.public_comment}</span>
         </span>
       )}
 
       {/* For swap */}
       {item.for_swap && (
-        <span className="text-xs bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded font-medium">
+        <span className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-medium">
           Обмін
         </span>
       )}
@@ -164,7 +166,7 @@ function ItemRow({ item, onEdit }: { item: UserVariationItem; onEdit: () => void
         <button
           onClick={onEdit}
           title="Редагувати"
-          className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50 transition-colors"
+          className="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-slate-500 hover:border-[#c9a96e]/50 hover:text-[#c9a96e] hover:bg-[#c9a96e]/5 transition-colors"
         >
           <Pencil className="h-3.5 w-3.5" />
         </button>
@@ -195,18 +197,18 @@ export function VariationsTable({ collectible, variations, userItems, isLoggedIn
 
   return (
     <div className="mt-4">
-      <h2 className="text-sm font-semibold text-gray-700 mb-2">
+      <h2 className="text-sm font-semibold text-slate-300 mb-2">
         Варіанти випуску
-        <span className="ml-2 text-gray-400 font-normal">({variations.length})</span>
+        <span className="ml-2 text-slate-500 font-normal">({variations.length})</span>
       </h2>
 
       <div className="card overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 w-16">Рік</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Підписи</th>
-              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 hidden sm:table-cell">Коментар</th>
+            <tr className="border-b border-white/10 bg-white/[0.02]">
+              <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 w-16">Рік</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-slate-500">Підписи</th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-slate-500 hidden sm:table-cell">Коментар</th>
               {isLoggedIn && <th className="px-3 py-2 w-10" />}
             </tr>
           </thead>
@@ -219,23 +221,25 @@ export function VariationsTable({ collectible, variations, userItems, isLoggedIn
               return (
                 <Fragment key={v.id}>
                   {/* Variation row */}
-                  <tr className={`border-t border-gray-100 ${hasThis ? 'bg-blue-50/50' : 'hover:bg-gray-50/60'}`}>
-                    <td className="px-3 py-2.5 font-medium text-gray-900 tabular-nums">
+                  <tr className={`border-t border-white/[0.06] transition-colors ${
+                    hasThis ? 'bg-[#c9a96e]/[0.04]' : 'hover:bg-white/[0.03]'
+                  }`}>
+                    <td className="px-3 py-2.5 font-medium text-slate-100 tabular-nums">
                       {v.gregorian_year ?? v.year ?? '—'}
                     </td>
                     <td className="px-3 py-2.5">
                       {sigs.length > 0 ? (
                         <span
                           title={sigFullNames(sigs)}
-                          className="font-mono text-xs bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded cursor-default"
+                          className="font-mono text-xs bg-white/10 text-slate-300 px-1.5 py-0.5 rounded cursor-default"
                         >
                           {sigInitials(sigs)}
                         </span>
                       ) : (
-                        <span className="text-gray-300 text-xs">—</span>
+                        <span className="text-slate-600 text-xs">—</span>
                       )}
                     </td>
-                    <td className="px-3 py-2.5 text-xs text-gray-500 hidden sm:table-cell max-w-[240px] truncate">
+                    <td className="px-3 py-2.5 text-xs text-slate-500 hidden sm:table-cell max-w-[240px] truncate">
                       {v.comment ?? ''}
                     </td>
                     {isLoggedIn && (
@@ -243,7 +247,7 @@ export function VariationsTable({ collectible, variations, userItems, isLoggedIn
                         <button
                           onClick={() => setModalVariation(v)}
                           title="Додати до колекції"
-                          className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors ml-auto"
+                          className="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-slate-500 hover:border-[#c9a96e]/50 hover:text-[#c9a96e] hover:bg-[#c9a96e]/5 transition-colors ml-auto"
                         >
                           <Plus className="h-3.5 w-3.5" />
                         </button>
@@ -253,7 +257,7 @@ export function VariationsTable({ collectible, variations, userItems, isLoggedIn
 
                   {/* Inline item rows for this variation */}
                   {hasThis && (
-                    <tr className="border-t border-blue-100">
+                    <tr className="border-t border-white/[0.06]">
                       <td colSpan={colCount} className="px-4 py-2">
                         <div className="space-y-1.5">
                           {myItems.map((item) => (
@@ -275,8 +279,8 @@ export function VariationsTable({ collectible, variations, userItems, isLoggedIn
 
         {/* Items with no variation assigned */}
         {isLoggedIn && itemsNoVariation.length > 0 && (
-          <div className="border-t border-gray-200 bg-gray-50 px-4 py-3">
-            <p className="text-xs text-gray-500 font-medium mb-2">Без конкретного варіанту:</p>
+          <div className="border-t border-white/10 bg-white/[0.02] px-4 py-3">
+            <p className="text-xs text-slate-500 font-medium mb-2">Без конкретного варіанту:</p>
             <div className="space-y-1.5">
               {itemsNoVariation.map((item) => (
                 <ItemRow
