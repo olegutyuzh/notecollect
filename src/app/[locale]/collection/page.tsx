@@ -1,18 +1,21 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import Image from 'next/image'
 import { Link } from '@/i18n/navigation'
-import { Star, Plus, X, Camera, Award, Hash, DollarSign, MessageSquare } from 'lucide-react'
+import { Star, Plus, Camera, Award, Hash, DollarSign, MessageSquare } from 'lucide-react'
 import type { CollectedItem, CollectibleWithRelations, CollectibleVariation, NumistaPicture, Country } from '@/types/database'
 import { getTranslations } from 'next-intl/server'
 import { EditCollectedItemButton } from '@/components/ui/EditCollectedItemButton'
 import { DeleteCollectedItemButton } from '@/components/ui/DeleteCollectedItemButton'
 import { Pagination } from '@/components/ui/Pagination'
 import { SortPanel } from '@/components/ui/SortPanel'
+import { CollectionFilters } from '@/components/ui/CollectionFilters'
+import { Suspense } from 'react'
 
 const PAGE_SIZE = 10
 
 interface SearchParams {
   country?: string
+  category?: string
   grading_company?: string
   slab_grade?: string
   page?: string
@@ -100,19 +103,13 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
   }
 
   let countryId: number | null = null
-  let countryName: string | null = null
-  let countryFlag: string | null = null
   if (sp.country) {
     const { data: cr } = await supabase
       .from('countries')
-      .select('id, name_uk, name_en, flag_emoji')
+      .select('id')
       .eq('code', sp.country)
-      .single() as unknown as { data: Pick<Country, 'id' | 'name_uk' | 'name_en' | 'flag_emoji'> | null }
-    if (cr) {
-      countryId   = cr.id
-      countryName = cr.name_uk ?? cr.name_en ?? sp.country
-      countryFlag = cr.flag_emoji ?? null
-    }
+      .single() as unknown as { data: Pick<Country, 'id'> | null }
+    countryId = cr?.id ?? null
   }
 
   let q = supabase
@@ -122,11 +119,12 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
     .order('created_at', { ascending: false })
 
   if (countryId !== null)  q = q.eq('collectibles.country_id', countryId)
+  if (sp.category)         q = q.eq('collectibles.category_code', sp.category)
   if (sp.grading_company)  q = q.eq('grading_company', sp.grading_company)
   if (sp.slab_grade)       q = q.eq('slab_grade', sp.slab_grade)
 
   const { data: rawItems } = await q
-  const allItems = (countryId !== null
+  const allItems = (countryId !== null || sp.category
     ? (rawItems ?? []).filter((i: any) => i.collectibles !== null)
     : (rawItems ?? [])) as unknown as ItemFull[]
 
@@ -191,6 +189,27 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
 
   const totalItems  = allItems.reduce((s, i) => s + (i.quantity ?? 1), 0)
   const uniqueCount = allItems.length
+
+  // ── Countries + grading companies for filter dropdowns ────────────────────
+  const { data: countriesRaw } = await supabase
+    .from('countries')
+    .select('code, name_uk, name_en, flag_emoji')
+    .order('name_uk')
+  const filterCountries = (countriesRaw ?? []) as Array<{
+    code: string; name_uk: string | null; name_en: string | null; flag_emoji: string | null
+  }>
+
+  const { data: gradingRows } = await supabase
+    .from('collected_items')
+    .select('grading_company')
+    .eq('user_id', user.id)
+    .not('grading_company', 'is', null)
+  const gradingCompanies = [
+    ...new Set(
+      ((gradingRows ?? []) as { grading_company: string | null }[])
+        .map(r => r.grading_company).filter(Boolean) as string[]
+    )
+  ].sort()
 
   const sort = sp.sort ?? 'country'
   const dir: 'asc' | 'desc' = sp.dir === 'desc' ? 'desc' : 'asc'
@@ -271,6 +290,7 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
   function getHref(p: number): string {
     const params = new URLSearchParams()
     if (sp.country)         params.set('country', sp.country)
+    if (sp.category)        params.set('category', sp.category)
     if (sp.grading_company) params.set('grading_company', sp.grading_company)
     if (sp.slab_grade)      params.set('slab_grade', sp.slab_grade)
     if (sp.sort)            params.set('sort', sp.sort)
@@ -298,6 +318,10 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
         </Link>
       </div>
 
+      <Suspense fallback={<div className="h-12 mb-5 card rounded-xl animate-pulse bg-white/5" />}>
+        <CollectionFilters countries={filterCountries} gradingCompanies={gradingCompanies} />
+      </Suspense>
+
       <div className="flex gap-5 items-start">
         <SortPanel
           sort={sort}
@@ -308,31 +332,6 @@ export default async function CollectionPage({ searchParams }: { searchParams: P
         />
 
         <div className="flex-1 min-w-0">
-          {/* Active filter badges */}
-          {(countryName || sp.grading_company || sp.slab_grade) && (
-            <div className="flex items-center gap-2 mb-5 flex-wrap">
-              {countryName && (
-                <span className="inline-flex items-center gap-1.5 bg-[#c9a96e]/10 text-[#c9a96e] text-sm font-medium px-3 py-1.5 rounded-full border border-[#c9a96e]/20">
-                  {countryFlag && <span>{countryFlag}</span>}
-                  {countryName}
-                </span>
-              )}
-              {sp.grading_company && (
-                <span className="inline-flex items-center gap-1.5 bg-purple-500/10 text-purple-300 text-sm font-medium px-3 py-1.5 rounded-full border border-purple-500/20">
-                  🏆 {sp.grading_company}
-                </span>
-              )}
-              {sp.slab_grade && (
-                <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 text-sm font-medium px-3 py-1.5 rounded-full border border-emerald-500/20">
-                  Грейд {sp.slab_grade}
-                </span>
-              )}
-              <Link href="/collection" className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-300">
-                <X className="h-3.5 w-3.5" />
-                Скинути фільтри
-              </Link>
-            </div>
-          )}
 
           {!allItems.length ? (
             <div className="text-center py-20 text-slate-600">

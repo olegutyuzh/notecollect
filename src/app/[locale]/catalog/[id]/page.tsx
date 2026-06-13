@@ -1,9 +1,9 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { Tag } from 'lucide-react'
+import { Tag, Trophy, Star } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
-import type { CollectibleWithRelations, CollectibleVariation, CollectibleDetails } from '@/types/database'
+import type { CollectibleWithRelations, CollectibleVariation, CollectibleDetails, CollectibleAward } from '@/types/database'
 import { AddToCollectionButton } from '@/components/ui/AddToCollectionButton'
 import { VariationsTable } from '@/components/ui/VariationsTable'
 import { BackButton } from '@/components/ui/BackButton'
@@ -57,6 +57,7 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
     { data: variations },
     { data: userItems },
     detailsResult,
+    { data: awardsRaw },
   ] = await Promise.all([
     supabase.from('collectibles').select('*, countries(*)').eq('id', id).single(),
     supabase.from('collectible_variations').select('*').eq('collectible_id', id).order('gregorian_year', { ascending: true }),
@@ -64,9 +65,11 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
       ? supabase.from('collected_items').select('id, user_id, collectible_id, collectible_variation_id, grade, quantity, for_swap, price_value, price_currency, serial_number, private_comment, public_comment, grading_company, grading_company_id, slab_grade, slab_number, grading_designations, pictures, created_at').eq('collectible_id', id).eq('user_id', user.id)
       : Promise.resolve({ data: [] }),
     supabase.from('collectible_details').select('*').eq('collectible_id', id).maybeSingle(),
+    supabase.from('collectible_awards').select('*').eq('collectible_id', id).order('award_year', { ascending: true }),
   ])
 
   const details = (detailsResult.data as unknown) as CollectibleDetails | null
+  const awards = (awardsRaw ?? []) as CollectibleAward[]
 
   if (!collectible) notFound()
 
@@ -182,6 +185,29 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
             </div>
           )}
 
+          {/* Awards */}
+          {awards.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {awards.map(a => (
+                <span
+                  key={a.id}
+                  className={[
+                    'inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 border',
+                    a.award_type === 'winner'
+                      ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                      : 'bg-white/8 text-slate-300 border-white/15',
+                  ].join(' ')}
+                  title={a.award_name}
+                >
+                  {a.award_type === 'winner'
+                    ? <Trophy className="h-3.5 w-3.5 shrink-0" />
+                    : <Star className="h-3.5 w-3.5 shrink-0" />}
+                  {a.award_type === 'winner' ? 'Переможець' : 'Номінант'} {a.award_year}
+                </span>
+              ))}
+            </div>
+          )}
+
           <AddToCollectionButton collectible={c} />
 
           {/* Main details table */}
@@ -239,6 +265,7 @@ export default async function CollectiblePage({ params }: { params: Promise<{ id
               )}
             </div>
           )}
+
 
           {d?.reverse_description && (
             <div className="card p-5">

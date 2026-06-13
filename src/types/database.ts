@@ -787,6 +787,32 @@ export type Collectible = Database['public']['Tables']['collectibles']['Row']
 export type CollectibleVariation = Database['public']['Tables']['collectible_variations']['Row']
 export type CollectibleDetails = Database['public']['Tables']['collectible_details']['Row']
 
+export interface Award {
+  id: number
+  name: string
+  is_active: boolean
+  created_at: string
+  created_by: string | null
+}
+
+export interface AwardOrganization {
+  id: number
+  short_name: string
+  long_name: string
+  is_active: boolean
+  website: string | null
+}
+
+export interface CollectibleAward {
+  id: number
+  collectible_id: number
+  award_year: number
+  award_type: 'nominee' | 'winner'
+  award_name: string
+  organization_id: number | null
+  award_id: number | null
+}
+
 export interface NumistaPicture {
   url?: string
   credit?: string
@@ -814,4 +840,3 @@ export interface CollectedItemFull extends CollectedItem {
 
 // Legacy alias kept for backward compat
 export type BanknoteWithRelations = CollectibleWithRelations
-
